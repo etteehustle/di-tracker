@@ -1,0 +1,31 @@
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dashboard-card-slot {
+  min-width: 0;
+  cursor: grab;
+}
+
+.dashboard-card-slot:active {
+  cursor: grabbing;
+}
+
+.dashboard-card-slot.dragging {
+  opacity: 0.48;
+}
+
+.dashboard-card-slot .metric-card {
+  height: 100%;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.dashboard-card-slot:hover .metric-card {
+  border-color: var(--line-hot);
+  transform: translateY(-1px);
+}

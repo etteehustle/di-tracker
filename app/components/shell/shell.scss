@@ -1,0 +1,128 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  background: rgba(10, 9, 7, 0.96);
+  border-right: 1px solid var(--line);
+  color: var(--ink);
+  padding: 18px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.brand {
+  min-height: 64px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(255, 138, 0, 0.08), rgba(255, 138, 0, 0.02));
+  border-radius: 8px;
+}
+
+.brand svg {
+  color: var(--orange);
+  flex: 0 0 auto;
+}
+
+.brand strong {
+  display: block;
+  font-family: var(--mono);
+  font-size: 17px;
+  letter-spacing: 0;
+}
+
+.brand span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+  line-height: 1.35;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 5px;
+}
+
+.sidebar button {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0 10px;
+  text-align: left;
+  font-size: 13px;
+}
+
+.sidebar button.active,
+.sidebar button:hover {
+  color: var(--ink);
+  background: rgba(255, 138, 0, 0.1);
+  border-color: var(--line-hot);
+}
+
+.sidebar button.active svg,
+.sidebar button:hover svg {
+  color: var(--orange);
+}
+
+.content {
+  min-width: 0;
+  padding: 22px;
+}
+
+.topbar {
+  min-height: 76px;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 18px;
+  padding: 14px 16px;
+  background: rgba(18, 17, 15, 0.82);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.topbar h1 {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: clamp(24px, 2.4vw, 36px);
+  line-height: 1.05;
+  text-transform: uppercase;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--orange-2);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.price-status {
+  max-width: 280px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  text-align: right;
+}

@@ -1,0 +1,16 @@
+.active-strip,
+.two-column,
+.panel {
+  margin-top: 16px;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: minmax(0, 1.18fr) minmax(340px, 0.82fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.panel {
+  padding: 16px;
+}

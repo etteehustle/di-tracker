@@ -1,0 +1,110 @@
+.metric-card {
+  min-height: 128px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.metric-card > span {
+  font-family: var(--mono);
+  text-transform: uppercase;
+}
+
+.metric-card strong {
+  font-family: var(--mono);
+  font-size: clamp(21px, 2vw, 30px);
+  line-height: 1.05;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.metric-card > strong,
+.price-list {
+  flex: 1;
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.metric-card.green strong {
+  color: var(--green);
+}
+
+.metric-card.red strong {
+  color: var(--red);
+}
+
+.metric-card.blue strong {
+  color: var(--orange);
+}
+
+.forecast-card,
+.price-card,
+.total-value-card {
+  gap: 10px;
+}
+
+.price-list {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.price-list strong {
+  font-size: 17px;
+  line-height: 1.15;
+}
+
+.asset-breakdown {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.asset-breakdown b {
+  color: var(--orange-2);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.asset-breakdown span {
+  overflow-wrap: anywhere;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #0b0a08;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.segmented button {
+  min-height: 30px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.segmented button.active {
+  background: var(--orange);
+  color: #120b02;
+}

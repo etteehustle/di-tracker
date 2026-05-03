@@ -1,0 +1,33 @@
+.metric-card,
+.panel,
+.card,
+.order-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)), var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+
+.metric-card::before,
+.panel::before,
+.order-card::before,
+.card::before {
+  content: "";
+  display: block;
+  height: 2px;
+  background: linear-gradient(90deg, var(--orange), transparent 68%);
+}
+
+.metric-card::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.panel::before,
+.order-card::before,
+.card::before {
+  margin: -1px -1px 12px;
+  border-radius: 8px 8px 0 0;
+}

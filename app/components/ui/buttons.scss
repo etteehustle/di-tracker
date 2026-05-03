@@ -1,0 +1,42 @@
+.icon-button,
+.secondary,
+.primary,
+.danger {
+  min-height: 38px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.icon-button,
+.secondary {
+  background: #171511;
+  color: var(--ink);
+}
+
+.icon-button:hover,
+.secondary:hover {
+  border-color: var(--line-hot);
+  color: var(--orange-2);
+}
+
+.primary {
+  background: var(--orange);
+  border-color: var(--orange);
+  color: #130c03;
+}
+
+.primary:hover {
+  background: var(--orange-2);
+}
+
+.danger {
+  background: rgba(255, 95, 87, 0.1);
+  border-color: rgba(255, 95, 87, 0.4);
+  color: var(--red);
+}

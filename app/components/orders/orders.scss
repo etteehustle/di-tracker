@@ -1,0 +1,99 @@
+.order-list {
+  display: grid;
+  gap: 12px;
+}
+
+.order-list.compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.order-card {
+  padding: 14px;
+}
+
+.order-card.buy_low {
+  border-left: 3px solid var(--green);
+}
+
+.order-card.sell_high {
+  border-left: 3px solid var(--orange);
+}
+
+.order-card.settled_hit,
+.order-card.settled_not_hit {
+  opacity: 0.86;
+}
+
+.order-title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.order-title strong {
+  font-family: var(--mono);
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.order-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.order-metrics span {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.order-metrics b {
+  display: block;
+  color: var(--ink);
+  font-family: var(--mono);
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+
+.order-metrics small {
+  display: block;
+  color: var(--orange-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.countdown-metric {
+  border-color: var(--line-hot) !important;
+  background: rgba(255, 138, 0, 0.08) !important;
+}
+
+details {
+  margin-top: 12px;
+  color: var(--muted);
+}
+
+details p {
+  margin: 8px 0 0;
+  line-height: 1.45;
+}
+
+summary {
+  color: var(--orange-2);
+  font-family: var(--mono);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
