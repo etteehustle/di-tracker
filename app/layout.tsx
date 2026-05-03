@@ -1,0 +1,15 @@
+import type { Metadata } from "next";
+import "./styles.scss";
+
+export const metadata: Metadata = {
+  title: "DI Tracker",
+  description: "Dual Investment operating system and performance ledger"
+};
+
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  return (
+    <html lang="en">
+      <body>{children}</body>
+    </html>
+  );
+}
