@@ -1,13 +1,17 @@
 import { Plus } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useState } from "react";
 import type { Asset, MarketContextTag, OrderEvaluation, ProductType } from "../../lib/domain/types";
-import { dateTimeInput, parseDateTimeInput } from "../../lib/domain/format";
 import { contextTags, type OrderDraft } from "../../lib/order-draft";
 import type { AppState } from "../../lib/domain/types";
 import { AssetSelect } from "../ui/AssetSelect";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
+import { Checkbox } from "../ui/Checkbox";
+import { DateTimePicker } from "../ui/DateTimePicker";
 import { FormattedNumberInput } from "../ui/FormattedNumberInput";
+import { Input } from "../ui/Input";
 import { SectionHeading } from "../ui/SectionHeading";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select";
 
 type CreateOrderFormProps = {
   state: AppState;
@@ -18,6 +22,10 @@ type CreateOrderFormProps = {
 };
 
 export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }: CreateOrderFormProps) {
+  const settlementMinDate = new Date(value.startTime);
+  settlementMinDate.setHours(0, 0, 0, 0);
+  settlementMinDate.setDate(settlementMinDate.getDate() + 1);
+
   function update<K extends keyof OrderDraft>(key: K, nextValue: OrderDraft[K]) {
     onChange({ ...value, [key]: nextValue });
   }
@@ -35,31 +43,41 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
   }
 
   return (
-    <section className="panel">
+    <Card className="panel">
       <SectionHeading title="Create Order" meta={`${evaluation.score} - ${evaluation.riskLevel} risk`} />
       <form className="form-grid" onSubmit={submit}>
         <label>
           Pocket
-          <select value={value.pocketId} onChange={(event) => update("pocketId", event.target.value)}>
-            {state.pockets.filter((pocket) => pocket.status === "ACTIVE").map((pocket) => (
-              <option key={pocket.id} value={pocket.id}>
-                {pocket.name}
-              </option>
-            ))}
-          </select>
+          <Select value={value.pocketId} onValueChange={(nextValue) => update("pocketId", nextValue)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {state.pockets.filter((pocket) => pocket.status === "ACTIVE").map((pocket) => (
+                <SelectItem key={pocket.id} value={pocket.id}>
+                  {pocket.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </label>
 
         <label>
           Product
-          <select value={value.productType} onChange={(event) => update("productType", event.target.value as ProductType)}>
-            <option value="BUY_LOW">Buy Low</option>
-            <option value="SELL_HIGH">Sell High</option>
-          </select>
+          <Select value={value.productType} onValueChange={(nextValue) => update("productType", nextValue as ProductType)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="BUY_LOW">Buy Low</SelectItem>
+              <SelectItem value="SELL_HIGH">Sell High</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
 
         <label>
           Pair
-          <input value={value.pair} onChange={(event) => update("pair", event.target.value)} />
+          <Input value={value.pair} onChange={(event) => update("pair", event.target.value)} />
         </label>
 
         <label>
@@ -74,12 +92,17 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
 
         <label>
           Start
-          <DateTimeField value={value.startTime} onChange={(nextValue) => update("startTime", nextValue)} />
+          <DateTimePicker label="Start" value={value.startTime} onChange={(nextValue) => update("startTime", nextValue)} />
         </label>
 
         <label>
           Settlement
-          <DateTimeField value={value.settlementTime} onChange={(nextValue) => update("settlementTime", nextValue)} />
+          <DateTimePicker
+            label="Settlement"
+            value={value.settlementTime}
+            disabled={{ before: settlementMinDate }}
+            onChange={(nextValue) => update("settlementTime", nextValue)}
+          />
         </label>
 
         <NumericField label="Premium amount" value={value.expectedPremiumAmount} onChange={(amount) => update("expectedPremiumAmount", amount)} />
@@ -103,8 +126,7 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
         <div className="tag-grid">
           {contextTags.map((tag) => (
             <label key={tag} className="check-label">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={value.marketContextTags.includes(tag)}
                 onChange={(event) => toggleTag(tag, event.target.checked)}
               />
@@ -115,7 +137,7 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
 
         <label className="wide">
           Note
-          <input value={value.note ?? ""} onChange={(event) => update("note", event.target.value)} />
+          <Input value={value.note ?? ""} onChange={(event) => update("note", event.target.value)} />
         </label>
 
         <div className="evaluation-box">
@@ -123,12 +145,12 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
           <span>{evaluation.reasons.join(" ")}</span>
         </div>
 
-        <button className="primary wide" type="submit">
+        <Button className="wide" type="submit">
           <Plus size={18} />
           Save active order
-        </button>
+        </Button>
       </form>
-    </section>
+    </Card>
   );
 }
 
@@ -138,29 +160,5 @@ function NumericField({ label, value, onChange }: { label: string; value: number
       {label}
       <FormattedNumberInput value={value} onChange={onChange} />
     </label>
-  );
-}
-
-function DateTimeField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
-  const [displayValue, setDisplayValue] = useState(dateTimeInput(value));
-
-  useEffect(() => {
-    setDisplayValue(dateTimeInput(value));
-  }, [value]);
-
-  function commit(nextDisplayValue: string) {
-    setDisplayValue(nextDisplayValue);
-    const parsed = parseDateTimeInput(nextDisplayValue);
-    if (parsed) onChange(parsed);
-  }
-
-  return (
-    <input
-      inputMode="numeric"
-      placeholder="dd/MM/YYYY HH:mm"
-      value={displayValue}
-      onChange={(event) => commit(event.target.value)}
-      onBlur={() => setDisplayValue(dateTimeInput(value))}
-    />
   );
 }

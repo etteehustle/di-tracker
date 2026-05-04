@@ -3,7 +3,11 @@ import { amount, money } from "../../lib/domain/format";
 import type { AppState } from "../../lib/domain/types";
 import { getAvailableBalances } from "../../lib/services/ledger-service";
 import { Badge } from "../ui/Badge";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 import { FormattedNumberInput } from "../ui/FormattedNumberInput";
+import { Input } from "../ui/Input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select";
 
 type PocketsViewProps = {
   state: AppState;
@@ -35,7 +39,7 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
         {state.pockets.map((pocket) => {
           const balances = getAvailableBalances(state, pocket.id);
           return (
-            <article className="card" key={pocket.id}>
+            <Card className="card" key={pocket.id}>
               <Badge label={pocket.status} tone={pocket.status.toLowerCase()} />
               <h3>{pocket.name}</h3>
               <p>{pocket.note}</p>
@@ -46,23 +50,28 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
                   </span>
                 ))}
               </div>
-            </article>
+            </Card>
           );
         })}
       </section>
 
-      <section className="panel">
+      <Card className="panel">
         <h2>Capital & Merge</h2>
         <form className="form-grid" onSubmit={submitDeposit}>
           <label>
             Deposit pocket
-            <select value={depositPocketId} onChange={(event) => setDepositPocketId(event.target.value)}>
-              {activePockets.map((pocket) => (
-                <option key={pocket.id} value={pocket.id}>
-                  {pocket.name}
-                </option>
-              ))}
-            </select>
+            <Select value={depositPocketId} onValueChange={setDepositPocketId}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {activePockets.map((pocket) => (
+                  <SelectItem key={pocket.id} value={pocket.id}>
+                    {pocket.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
 
           <label>
@@ -72,13 +81,13 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
 
           <label className="wide">
             Note
-            <input required value={depositNote} onChange={(event) => setDepositNote(event.target.value)} />
+            <Input required value={depositNote} onChange={(event) => setDepositNote(event.target.value)} />
           </label>
 
-          <button className="primary wide" type="submit">Create deposit</button>
+          <Button className="wide" type="submit">Create deposit</Button>
         </form>
-        <button className="secondary" onClick={mergeByPrompt}>Merge pockets by id</button>
-      </section>
+        <Button variant="secondary" onClick={mergeByPrompt}>Merge pockets by id</Button>
+      </Card>
     </div>
   );
 }

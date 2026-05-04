@@ -1,5 +1,7 @@
 import { Activity, BarChart3 } from "lucide-react";
 import { environment } from "../../environment";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 
 type RoadmapProps = {
   onReset: () => void;
@@ -10,7 +12,7 @@ export function Roadmap({ onReset }: RoadmapProps) {
     <section className="panel roadmap">
       <h2>Phase Memory</h2>
       <div className="phase-list">
-        <article>
+        <Card className="roadmap-item">
           <Activity />
           <strong>Phase 1 in this build</strong>
           <p>
@@ -18,19 +20,19 @@ export function Roadmap({ onReset }: RoadmapProps) {
             cost basis lots, pockets, deposits, merge flow, portfolio overview, audit log, forecast settled/blended,
             order evaluation, responsive shell.
           </p>
-        </article>
-        <article>
+        </Card>
+        <Card className="roadmap-item">
           <BarChart3 />
           <strong>Phase 2 backlog</strong>
           <p>
             Supabase/Postgres repository, auth optional, advanced analytics charts, CSV export, richer filters/sorts,
             edit settled order modal, manual portfolio adjustment form, forecast detail page, PWA and deploy hardening.
           </p>
-        </article>
+        </Card>
       </div>
-      <button className="danger" onClick={onReset}>
+      <Button variant="destructive" onClick={onReset}>
         Reset local {environment.mock.enabled ? "mock data" : "data"}
-      </button>
+      </Button>
     </section>
   );
 }

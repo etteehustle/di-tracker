@@ -5,6 +5,8 @@ import type { ForecastMode } from "../../lib/domain/types";
 import { amount, money } from "../../lib/domain/format";
 import { activeOrderPendingPremiumUSDT } from "../../lib/services/portfolio-service";
 import type { DashboardMetrics } from "../../lib/view-models";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 import { OrderCard } from "../orders/OrderCard";
 import { MetricCard } from "../ui/MetricCard";
 import { SectionHeading } from "../ui/SectionHeading";
@@ -88,7 +90,7 @@ export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManag
     if (cardId === "marketPrices") return <MarketPricesCard prices={metrics.prices} />;
     if (cardId === "currentHolding") {
       return (
-        <article className="metric-card holding-entry-card">
+        <Card className="metric-card holding-entry-card">
           <span>Current Holding Entry</span>
           {metrics.holdingEntries.length ? (
             <div className="holding-entry-list">
@@ -103,7 +105,7 @@ export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManag
           ) : (
             <strong>No coin lots</strong>
           )}
-        </article>
+        </Card>
       );
     }
     if (cardId === "forecast") {
@@ -144,7 +146,7 @@ export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManag
       <section className="active-strip">
         <SectionHeading
           title="Active Orders"
-          action={<button className="secondary" onClick={onManageOrders}>Manage orders</button>}
+          action={<Button variant="secondary" onClick={onManageOrders}>Manage orders</Button>}
         />
         <div className="order-list compact">
           {metrics.activeOrders.map((order) => (

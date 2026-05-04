@@ -5,8 +5,12 @@ import type { AppState } from "../../lib/domain/types";
 import { getLedgerBalances } from "../../lib/services/ledger-service";
 import type { PortfolioBuyInput } from "../../lib/services/portfolio-adjustment-service";
 import type { DashboardMetrics } from "../../lib/view-models";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 import { FormattedNumberInput } from "../ui/FormattedNumberInput";
+import { Input } from "../ui/Input";
 import { MetricCard } from "../ui/MetricCard";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select";
 
 const buyAssets: PortfolioBuyInput["asset"][] = ["SOL", "OKSOL", "BTC", "ETH"];
 
@@ -67,18 +71,23 @@ export function PortfolioView({ state, metrics, onRecordBuy }: PortfolioViewProp
         </div>
       </section>
 
-      <section className="panel">
+      <Card className="panel">
         <h2>Record Portfolio Buy</h2>
         <form className="form-grid portfolio-buy-form" onSubmit={submitBuy}>
           <label>
             Asset
-            <select value={buyForm.asset} onChange={(event) => updateBuyForm("asset", event.target.value as PortfolioBuyInput["asset"])}>
-              {buyAssets.map((asset) => (
-                <option key={asset} value={asset}>
-                  {asset}
-                </option>
-              ))}
-            </select>
+            <Select value={buyForm.asset} onValueChange={(nextValue) => updateBuyForm("asset", nextValue as PortfolioBuyInput["asset"])}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {buyAssets.map((asset) => (
+                  <SelectItem key={asset} value={asset}>
+                    {asset}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </label>
           <label>
             Coin amount
@@ -90,11 +99,11 @@ export function PortfolioView({ state, metrics, onRecordBuy }: PortfolioViewProp
           </label>
           <label className="wide">
             Note
-            <input value={buyForm.note} onChange={(event) => updateBuyForm("note", event.target.value)} />
+            <Input value={buyForm.note} onChange={(event) => updateBuyForm("note", event.target.value)} />
           </label>
-          <button className="primary wide" type="submit">Record buy</button>
+          <Button className="wide" type="submit">Record buy</Button>
         </form>
-      </section>
+      </Card>
     </>
   );
 }

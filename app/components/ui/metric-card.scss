@@ -49,7 +49,7 @@
 }
 
 .metric-card.blue strong {
-  color: var(--orange);
+  color: #5eead4;
 }
 
 .forecast-card,
@@ -78,10 +78,10 @@
   grid-template-columns: auto 1fr;
   gap: 2px 8px;
   align-items: baseline;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   padding: 8px;
-  background: rgba(0, 0, 0, 0.14);
+  background: var(--muted-bg);
 }
 
 .holding-entry-row b,
@@ -90,7 +90,7 @@
 }
 
 .holding-entry-row b {
-  color: var(--orange-2);
+  color: #5eead4;
   font-size: 12px;
 }
 
@@ -121,7 +121,7 @@
 }
 
 .asset-breakdown b {
-  color: var(--orange-2);
+  color: #5eead4;
   font-size: 12px;
   margin-top: 2px;
 }
@@ -133,21 +133,18 @@
 .segmented {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  background: #0b0a08;
+  background: var(--background);
   padding: 3px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
 }
 
-.segmented button {
+.segmented .segmented-button {
   min-height: 30px;
   border-radius: 6px;
-  background: transparent;
-  color: var(--muted);
-  font-size: 12px;
 }
 
-.segmented button.active {
-  background: var(--orange);
-  color: #120b02;
+.segmented .segmented-button[data-active="true"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }

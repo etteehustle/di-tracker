@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { formatNumericInput, formatNumericInputText, parseFormattedNumber } from "../../lib/domain/number-format";
+import { Input } from "./Input";
 
 type FormattedNumberInputProps = {
   value: number;
@@ -35,7 +36,7 @@ export function FormattedNumberInput({ value, onChange, required = false }: Form
   }
 
   return (
-    <input
+    <Input
       type="text"
       inputMode="decimal"
       required={required}

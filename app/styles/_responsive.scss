@@ -21,7 +21,7 @@
     padding: 8px;
     display: block;
     border-right: 0;
-    border-top: 1px solid var(--line);
+    border-top: 1px solid var(--border);
   }
 
   .brand {
@@ -34,14 +34,14 @@
     gap: 4px;
   }
 
-  .sidebar button {
+  .sidebar .nav-button {
     min-height: 54px;
     justify-content: center;
     padding: 6px;
     font-size: 0;
   }
 
-  .sidebar button svg {
+  .sidebar .nav-button svg {
     width: 20px;
     height: 20px;
   }
@@ -95,5 +95,30 @@
 
   .sidebar nav {
     grid-template-columns: repeat(4, 1fr);
+  }
+
+  .ui-popover-content {
+    max-width: min(16.25rem, calc(100vw - 24px));
+  }
+
+  .datetime-card {
+    width: fit-content;
+    max-width: min(16.25rem, calc(100vw - 24px));
+  }
+
+  .datetime-card-content,
+  .datetime-card-footer {
+    padding: 10px;
+  }
+
+  .ui-calendar {
+    --rdp-day-width: 1.65rem;
+    --rdp-day-height: 1.65rem;
+    --rdp-day_button-width: 1.55rem;
+    --rdp-day_button-height: 1.55rem;
+    --rdp-nav_button-width: 1.72rem;
+    --rdp-nav_button-height: 1.72rem;
+    --rdp-nav-height: 1.95rem;
+    font-size: 11px;
   }
 }

@@ -1,0 +1,41 @@
+.ui-tabs-list {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--muted-bg);
+  padding: 4px;
+}
+
+.ui-tabs-trigger {
+  min-width: 0;
+  min-height: 42px;
+  border: 0;
+  border-radius: calc(var(--radius) - 2px);
+  background: transparent;
+  color: var(--muted-foreground);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.15;
+  padding: 8px;
+}
+
+.ui-tabs-trigger[data-state="active"] {
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.32);
+}
+
+.ui-tabs-content {
+  margin-top: 14px;
+}
+
+.ui-tabs-content:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

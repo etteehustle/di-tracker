@@ -11,6 +11,22 @@ export const contextTags: MarketContextTag[] = [
   "Near resistance"
 ];
 
+function pad2(value: number): string {
+  return String(value).padStart(2, "0");
+}
+
+function dateTimeLocalInput(date: Date): string {
+  return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+function defaultSettlementTime(startTime: Date): Date {
+  const settlementTime = new Date(startTime);
+  settlementTime.setDate(settlementTime.getDate() + 1);
+  return settlementTime;
+}
+
+const defaultStartTime = new Date();
+
 export const emptyOrder: OrderDraft = {
   exchange: "OKX" as Exchange,
   productType: "BUY_LOW" as ProductType,
@@ -21,8 +37,8 @@ export const emptyOrder: OrderDraft = {
   strikePrice: 86,
   aprPercent: 97.6,
   termRatePercent: 1.036,
-  startTime: "2026-04-26T11:00",
-  settlementTime: "2026-04-26T18:00",
+  startTime: dateTimeLocalInput(defaultStartTime),
+  settlementTime: dateTimeLocalInput(defaultSettlementTime(defaultStartTime)),
   expectedPremiumAmount: 31.75,
   expectedPremiumAsset: "USDT" as Asset,
   ifHitAsset: "OKSOL" as Asset,

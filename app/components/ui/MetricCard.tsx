@@ -1,3 +1,5 @@
+import { Card } from "./Card";
+
 type MetricCardProps = {
   label: string;
   value: string;
@@ -7,9 +9,9 @@ type MetricCardProps = {
 
 export function MetricCard({ label, value, tone = "neutral", className = "" }: MetricCardProps) {
   return (
-    <article className={`metric-card ${tone} ${className}`.trim()}>
+    <Card className={`metric-card ${tone} ${className}`.trim()}>
       <span>{label}</span>
       <strong>{value}</strong>
-    </article>
+    </Card>
   );
 }

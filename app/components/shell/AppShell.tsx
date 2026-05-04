@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Tab } from "../../lib/view-models";
+import { Button } from "../ui/Button";
 
 const tabs: Array<{ id: Tab; label: string; icon: ReactNode }> = [
   { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
@@ -45,14 +46,16 @@ export function AppShell({ activeTab, priceStatus, onTabChange, onRefreshPrices,
         </div>
         <nav>
           {tabs.map((item) => (
-            <button
+            <Button
               key={item.id}
-              className={activeTab === item.id ? "active" : ""}
+              variant="ghost"
+              className="nav-button"
+              data-active={activeTab === item.id}
               onClick={() => onTabChange(item.id)}
             >
               {item.icon}
               {item.label}
-            </button>
+            </Button>
           ))}
         </nav>
       </aside>
@@ -65,9 +68,9 @@ export function AppShell({ activeTab, priceStatus, onTabChange, onRefreshPrices,
           </div>
           <div className="toolbar">
             <span className="price-status">{priceStatus}</span>
-            <button className="icon-button" title="Refresh prices" onClick={onRefreshPrices}>
+            <Button variant="outline" size="icon" title="Refresh prices" onClick={onRefreshPrices}>
               <RefreshCcw size={18} />
-            </button>
+            </Button>
           </div>
         </header>
 

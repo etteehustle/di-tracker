@@ -1,33 +1,38 @@
-.metric-card,
-.panel,
-.card,
-.order-card {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0)), var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+.ui-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--card-foreground);
   box-shadow: var(--shadow);
 }
 
-.metric-card::before,
-.panel::before,
-.order-card::before,
-.card::before {
-  content: "";
-  display: block;
-  height: 2px;
-  background: linear-gradient(90deg, var(--orange), transparent 68%);
+.ui-card-header,
+.ui-card-content,
+.ui-card-footer {
+  min-width: 0;
 }
 
-.metric-card::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+.ui-card-header {
+  display: grid;
+  gap: 6px;
 }
 
-.panel::before,
-.order-card::before,
-.card::before {
-  margin: -1px -1px 12px;
-  border-radius: 8px 8px 0 0;
+.ui-card-title {
+  color: var(--card-foreground);
+  font-family: var(--mono);
+  font-size: 16px;
+}
+
+.ui-card-description {
+  margin: 0;
+  color: var(--muted-foreground);
+  line-height: 1.5;
+}
+
+.metric-card,
+.card,
+.order-card {
+  background: var(--card);
+  border-color: var(--border);
+  border-radius: var(--radius);
 }

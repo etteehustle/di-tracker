@@ -1,42 +1,74 @@
-.icon-button,
-.secondary,
-.primary,
-.danger {
+.ui-button {
   min-height: 38px;
-  border-radius: 8px;
+  border-radius: var(--radius);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 0 12px;
-  border: 1px solid var(--line);
-  font-weight: 700;
+  border: 1px solid transparent;
+  font-weight: 650;
+  line-height: 1;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
 }
 
-.icon-button,
-.secondary {
-  background: #171511;
-  color: var(--ink);
+.ui-button-md {
+  min-height: 38px;
 }
 
-.icon-button:hover,
-.secondary:hover {
-  border-color: var(--line-hot);
-  color: var(--orange-2);
+.ui-button-sm {
+  min-height: 32px;
+  padding: 0 10px;
+  font-size: 12px;
 }
 
-.primary {
-  background: var(--orange);
-  border-color: var(--orange);
-  color: #130c03;
+.ui-button-icon {
+  width: 38px;
+  min-width: 38px;
+  padding: 0;
 }
 
-.primary:hover {
-  background: var(--orange-2);
+.ui-button-default {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
-.danger {
-  background: rgba(255, 95, 87, 0.1);
-  border-color: rgba(255, 95, 87, 0.4);
-  color: var(--red);
+.ui-button-default:hover {
+  background: #d4d4d8;
+}
+
+.ui-button-secondary,
+.ui-button-outline {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  border-color: var(--border);
+}
+
+.ui-button-secondary:hover,
+.ui-button-outline:hover {
+  background: #3f3f46;
+}
+
+.ui-button-ghost {
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.ui-button-ghost:hover {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
+.ui-button-destructive {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.42);
+  color: #fca5a5;
+}
+
+.ui-button-destructive:hover {
+  background: rgba(239, 68, 68, 0.2);
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import "react-day-picker/style.css";
 import "./styles.scss";
 
 export const metadata: Metadata = {

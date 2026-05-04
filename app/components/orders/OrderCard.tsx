@@ -6,6 +6,8 @@ import { amount, dateTime, hoursUntil, money, percent } from "../../lib/domain/f
 import type { DIOrder, OrderEvaluation } from "../../lib/domain/types";
 import type { OrderSettlementResult } from "../../lib/view-models";
 import { Badge } from "../ui/Badge";
+import { Button } from "../ui/Button";
+import { Card } from "../ui/Card";
 
 type OrderCardProps = {
   order: DIOrder;
@@ -28,7 +30,7 @@ export function OrderCard({ order, evaluation, pendingPremium = 0, onSettle, onD
   }, []);
 
   return (
-    <article className={`order-card ${productTone} ${statusTone}`}>
+    <Card className={`order-card ${productTone} ${statusTone}`}>
       <div className="order-title">
         <div>
           <Badge label={productLabel} tone={productTone} />
@@ -79,15 +81,15 @@ export function OrderCard({ order, evaluation, pendingPremium = 0, onSettle, onD
 
       {order.status === "ACTIVE" && onSettle && (
         <div className="card-actions">
-          <button className="secondary" onClick={() => onSettle(order, "HIT")}>Settle Hit</button>
-          <button className="secondary" onClick={() => onSettle(order, "NOT_HIT")}>Settle Not Hit</button>
+          <Button variant="secondary" onClick={() => onSettle(order, "HIT")}>Settle Hit</Button>
+          <Button variant="secondary" onClick={() => onSettle(order, "NOT_HIT")}>Settle Not Hit</Button>
           {onDelete && (
-            <button className="danger" title="Soft delete" onClick={() => onDelete(order)}>
+            <Button variant="destructive" size="icon" title="Soft delete" onClick={() => onDelete(order)}>
               <Trash2 size={16} />
-            </button>
+            </Button>
           )}
         </div>
       )}
-    </article>
+    </Card>
   );
 }

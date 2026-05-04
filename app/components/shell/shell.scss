@@ -8,8 +8,8 @@
   position: sticky;
   top: 0;
   height: 100vh;
-  background: rgba(10, 9, 7, 0.96);
-  border-right: 1px solid var(--line);
+  background: var(--background);
+  border-right: 1px solid var(--border);
   color: var(--ink);
   padding: 18px 14px;
   display: flex;
@@ -23,13 +23,13 @@
   gap: 12px;
   align-items: center;
   padding: 10px;
-  border: 1px solid var(--line);
-  background: linear-gradient(180deg, rgba(255, 138, 0, 0.08), rgba(255, 138, 0, 0.02));
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius);
 }
 
 .brand svg {
-  color: var(--orange);
+  color: var(--ring);
   flex: 0 0 auto;
 }
 
@@ -53,30 +53,27 @@
   gap: 5px;
 }
 
-.sidebar button {
+.sidebar .nav-button {
   min-height: 40px;
   display: flex;
   align-items: center;
   gap: 10px;
-  color: var(--muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 8px;
   padding: 0 10px;
   text-align: left;
   font-size: 13px;
+  justify-content: flex-start;
+  width: 100%;
 }
 
-.sidebar button.active,
-.sidebar button:hover {
+.sidebar .nav-button[data-active="true"],
+.sidebar .nav-button:hover {
   color: var(--ink);
-  background: rgba(255, 138, 0, 0.1);
-  border-color: var(--line-hot);
+  background: var(--secondary);
 }
 
-.sidebar button.active svg,
-.sidebar button:hover svg {
-  color: var(--orange);
+.sidebar .nav-button[data-active="true"] svg,
+.sidebar .nav-button:hover svg {
+  color: var(--ring);
 }
 
 .content {
@@ -92,9 +89,9 @@
   align-items: center;
   margin-bottom: 18px;
   padding: 14px 16px;
-  background: rgba(18, 17, 15, 0.82);
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
 }
 
@@ -108,7 +105,7 @@
 
 .eyebrow {
   margin: 0 0 6px;
-  color: var(--orange-2);
+  color: var(--muted-foreground);
   font-family: var(--mono);
   font-size: 12px;
 }

@@ -1,5 +1,6 @@
 import { money } from "../../lib/domain/format";
 import type { DashboardMetrics } from "../../lib/view-models";
+import { Card } from "../ui/Card";
 
 type MarketPricesCardProps = {
   prices: DashboardMetrics["prices"];
@@ -7,7 +8,7 @@ type MarketPricesCardProps = {
 
 export function MarketPricesCard({ prices }: MarketPricesCardProps) {
   return (
-    <article className="metric-card price-card">
+    <Card className="metric-card price-card">
       <span>Market Prices</span>
       <div className="price-list">
         <strong>SOL {money(prices.SOL)}</strong>
@@ -15,6 +16,6 @@ export function MarketPricesCard({ prices }: MarketPricesCardProps) {
         <strong>ETH {money(prices.ETH)}</strong>
       </div>
       <small>OKSOL uses SOL price</small>
-    </article>
+    </Card>
   );
 }

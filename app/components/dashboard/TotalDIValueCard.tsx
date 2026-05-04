@@ -1,5 +1,6 @@
 import { amount, money } from "../../lib/domain/format";
 import type { DashboardMetrics } from "../../lib/view-models";
+import { Card } from "../ui/Card";
 
 type TotalDIValueCardProps = {
   metrics: DashboardMetrics;
@@ -7,7 +8,7 @@ type TotalDIValueCardProps = {
 
 export function TotalDIValueCard({ metrics }: TotalDIValueCardProps) {
   return (
-    <article className="metric-card total-value-card blue">
+    <Card className="metric-card total-value-card blue">
       <span>Total DI Value</span>
       <strong>{money(metrics.diValue)}</strong>
       <div className="asset-breakdown">
@@ -33,6 +34,6 @@ export function TotalDIValueCard({ metrics }: TotalDIValueCardProps) {
           <span>No active order lock</span>
         )}
       </div>
-    </article>
+    </Card>
   );
 }

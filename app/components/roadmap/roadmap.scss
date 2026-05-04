@@ -5,17 +5,14 @@
   margin: 14px 0;
 }
 
-.roadmap article {
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.14);
+.roadmap .roadmap-item {
   padding: 14px;
   display: grid;
   gap: 8px;
 }
 
 .roadmap svg {
-  color: var(--orange);
+  color: var(--ring);
 }
 
 .roadmap p {
