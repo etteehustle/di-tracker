@@ -1,9 +1,11 @@
 import { normalizeAsset } from "../domain/assets";
 import type { AppState, Asset, CostBasisLot, CostBasisStatus } from "../domain/types";
 
+const DUST_ECONOMIC_COST_USDT = 5;
+
 export function weightedAverageEntry(lots: CostBasisLot[], asset: Asset): number | null {
   const underlyingAsset = normalizeAsset(asset);
-  const openLots = lots.filter((lot) => lot.underlyingAsset === underlyingAsset && lot.status === "OPEN" && lot.amount > 0);
+  const openLots = lots.filter((lot) => lot.underlyingAsset === underlyingAsset && lot.status === "OPEN" && lot.amount > 1e-9);
   const totalAmount = openLots.reduce((sum, lot) => sum + lot.amount, 0);
   if (totalAmount <= 0) return null;
   const totalCost = openLots.reduce((sum, lot) => sum + lot.economicCostUSDT, 0);
@@ -13,18 +15,20 @@ export function weightedAverageEntry(lots: CostBasisLot[], asset: Asset): number
 export function getHoldingEntries(state: AppState): Array<{ asset: Asset; entry: number; amount: number; economicCostUSDT: number }> {
   const grouped = new Map<string, { asset: Asset; amount: number; economicCostUSDT: number }>();
 
-  for (const lot of state.costBasisLots.filter((item) => item.status === "OPEN" && item.amount > 0)) {
-    const key = lot.underlyingAsset;
-    const current = grouped.get(key) ?? { asset: lot.underlyingAsset as Asset, amount: 0, economicCostUSDT: 0 };
+  for (const lot of state.costBasisLots.filter((item) => item.status === "OPEN" && item.amount > 1e-9)) {
+    const key = lot.asset;
+    const current = grouped.get(key) ?? { asset: lot.asset, amount: 0, economicCostUSDT: 0 };
     current.amount += lot.amount;
     current.economicCostUSDT += lot.economicCostUSDT;
     grouped.set(key, current);
   }
 
-  return Array.from(grouped.values()).map((item) => ({
-    ...item,
-    entry: item.economicCostUSDT / item.amount
-  }));
+  return Array.from(grouped.values())
+    .filter((item) => item.economicCostUSDT > DUST_ECONOMIC_COST_USDT)
+    .map((item) => ({
+      ...item,
+      entry: item.economicCostUSDT / item.amount
+    }));
 }
 
 export function reduceLotsWeightedAverage(

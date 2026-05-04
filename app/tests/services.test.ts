@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { AppState, DIOrder } from "../lib/domain/types";
 import { normalizeAsset } from "../lib/domain/assets";
-import { weightedAverageEntry } from "../lib/services/cost-basis-service";
-import { getCurrentDIValueUSDT, getDIPnlUSDT, makeForecast } from "../lib/services/portfolio-service";
+import { getHoldingEntries, weightedAverageEntry } from "../lib/services/cost-basis-service";
+import { getCurrentDIValueUSDT, getDIPnlUSDT, getNetDepositedCapitalUSDT, makeForecast } from "../lib/services/portfolio-service";
+import { recordPortfolioBuy } from "../lib/services/portfolio-adjustment-service";
 import { mergePockets } from "../lib/services/pocket-service";
 import { softDeleteOrder } from "../lib/services/order-service";
 import { settleOrder } from "../lib/services/settlement-service";
@@ -92,6 +93,44 @@ describe("DI accounting services", () => {
     const settled = next.orders.find((order) => order.id === "order_sell_high_seed");
     expect(settled?.realizedYieldUSDT).toBeGreaterThan(0);
     expect(next.ledgerEntries.some((entry) => entry.deltaAmount === 64.15430203 && entry.asset === "OKSOL")).toBe(true);
+    expect(weightedAverageEntry(next.costBasisLots, "OKSOL")).toBeLessThan(84.1354);
+  });
+
+  it("hides dust holding entry after Sell High hit closes the economic position", () => {
+    const state = cloneState();
+    const next = settleOrder(state, {
+      orderId: "order_sell_high_seed",
+      result: "HIT",
+      receivedAsset: "USDT",
+      receivedAmount: 5517.26997458,
+      settledAt: "2026-05-02T08:00:00.000Z",
+      note: "test sell high hit"
+    });
+
+    expect(getHoldingEntries(next).some((entry) => entry.asset === "OKSOL")).toBe(false);
+  });
+
+  it("records manual portfolio buys as per-asset holding entries", () => {
+    const state = cloneState();
+    const withBtc = recordPortfolioBuy(state, {
+      asset: "BTC",
+      amount: 0.1,
+      costUSDT: 6000,
+      note: "test BTC buy"
+    });
+    const withEth = recordPortfolioBuy(withBtc, {
+      asset: "ETH",
+      amount: 2,
+      costUSDT: 7000,
+      note: "test ETH buy"
+    });
+
+    const entries = getHoldingEntries(withEth);
+    expect(entries.find((entry) => entry.asset === "BTC")?.entry).toBeCloseTo(60000, 6);
+    expect(entries.find((entry) => entry.asset === "ETH")?.entry).toBeCloseTo(3500, 6);
+    expect(entries.find((entry) => entry.asset === "OKSOL")?.entry).toBeCloseTo(84.1354, 4);
+    expect(getNetDepositedCapitalUSDT(withEth)).toBeCloseTo(getNetDepositedCapitalUSDT(state) + 13000, 6);
+    expect(withEth.costBasisLots.find((lot) => lot.asset === "BTC")?.pocketId).toBeNull();
   });
 
   it("keeps total DI PnL unchanged when merging pockets", () => {

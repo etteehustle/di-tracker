@@ -3,6 +3,7 @@ import { amount, money } from "../../lib/domain/format";
 import type { AppState } from "../../lib/domain/types";
 import { getAvailableBalances } from "../../lib/services/ledger-service";
 import { Badge } from "../ui/Badge";
+import { FormattedNumberInput } from "../ui/FormattedNumberInput";
 
 type PocketsViewProps = {
   state: AppState;
@@ -66,7 +67,7 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
 
           <label>
             USDT amount
-            <input type="number" value={depositAmount} onChange={(event) => setDepositAmount(Number(event.target.value))} />
+            <FormattedNumberInput value={depositAmount} onChange={setDepositAmount} />
           </label>
 
           <label className="wide">

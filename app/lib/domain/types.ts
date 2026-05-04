@@ -129,7 +129,7 @@ export type LedgerEntry = {
 export type CostBasisLot = {
   id: string;
   portfolioId: string;
-  pocketId: string;
+  pocketId?: string | null;
   asset: Asset;
   underlyingAsset: UnderlyingAsset;
   amount: number;

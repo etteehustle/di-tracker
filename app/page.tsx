@@ -11,6 +11,7 @@ import { Roadmap } from "./components/roadmap/Roadmap";
 import { AppShell } from "./components/shell/AppShell";
 import { environment } from "./environment";
 import { dateTime } from "./lib/domain/format";
+import { parseFormattedNumber } from "./lib/domain/number-format";
 import type { AppState, DIOrder, ForecastMode } from "./lib/domain/types";
 import { emptyOrder, type OrderDraft } from "./lib/order-draft";
 import { getHoldingEntries } from "./lib/services/cost-basis-service";
@@ -26,6 +27,7 @@ import {
   getPortfolioTotalValueUSDT,
   makeForecast
 } from "./lib/services/portfolio-service";
+import { recordPortfolioBuy, type PortfolioBuyInput } from "./lib/services/portfolio-adjustment-service";
 import { depositToPocket, mergePockets } from "./lib/services/pocket-service";
 import { settleOrder } from "./lib/services/settlement-service";
 import { loadState, resetState, saveState } from "./lib/store/local-store";
@@ -105,6 +107,8 @@ export default function Home() {
     const expectedAmount = result === "HIT" ? order.ifHitAmount : order.ifNotHitAmount;
     const receivedRaw = window.prompt(`Actual received amount (${expectedAsset})`, String(expectedAmount));
     if (!receivedRaw) return;
+    const receivedAmount = parseFormattedNumber(receivedRaw);
+    if (receivedAmount === null) return window.alert("Actual received amount must be numeric.");
 
     const note = window.prompt("Settlement note/reason", `${result} settlement`) ?? "";
     if (!note.trim()) return window.alert("Settlement note is required.");
@@ -115,7 +119,7 @@ export default function Home() {
             orderId: order.id,
             result,
             receivedAsset: expectedAsset,
-            receivedAmount: Number(receivedRaw),
+            receivedAmount,
             settledAt: new Date().toISOString(),
             note
           })
@@ -153,6 +157,14 @@ export default function Home() {
     }
   }
 
+  function recordBuy(input: PortfolioBuyInput) {
+    try {
+      setState((current) => current ? recordPortfolioBuy(current, input) : current);
+    } catch (error) {
+      window.alert(error instanceof Error ? error.message : "Portfolio buy failed");
+    }
+  }
+
   function renderActiveTab() {
     if (tab === "dashboard") {
       return (
@@ -185,7 +197,7 @@ export default function Home() {
     }
 
     if (tab === "portfolio") {
-      return <PortfolioView state={currentState} metrics={currentMetrics} />;
+      return <PortfolioView state={currentState} metrics={currentMetrics} onRecordBuy={recordBuy} />;
     }
 
     if (tab === "analytics") {

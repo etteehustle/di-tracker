@@ -89,6 +89,26 @@ export function settleOrder(state: AppState, input: SettleInput): AppState {
     const premiumCoin = input.receivedAmount - order.subscribedAmount;
     const averageEntry = state.costBasisLots.find((lot) => lot.underlyingAsset === normalizeAsset(order.subscribedAsset) && lot.status === "OPEN")?.effectiveEntry ?? order.strikePrice;
     realizedYieldUSDT = Math.max(0, premiumCoin * averageEntry);
+    if (premiumCoin > 0) {
+      nextLots = [
+        ...nextLots,
+        {
+          id: createId("lot"),
+          portfolioId: order.portfolioId,
+          pocketId: order.pocketId,
+          asset: input.receivedAsset,
+          underlyingAsset: normalizeAsset(input.receivedAsset),
+          amount: premiumCoin,
+          economicCostUSDT: 0,
+          effectiveEntry: 0,
+          strikeBasis: order.strikePrice,
+          sourceOrderId: order.id,
+          status: "OPEN",
+          createdAt: input.settledAt,
+          updatedAt: input.settledAt
+        }
+      ];
+    }
   }
 
   const settledOrder: DIOrder = {

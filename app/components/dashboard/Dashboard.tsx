@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ForecastMode } from "../../lib/domain/types";
-import { money } from "../../lib/domain/format";
+import { amount, money } from "../../lib/domain/format";
 import { activeOrderPendingPremiumUSDT } from "../../lib/services/portfolio-service";
 import type { DashboardMetrics } from "../../lib/view-models";
 import { OrderCard } from "../orders/OrderCard";
@@ -61,9 +61,6 @@ function loadDashboardCardOrder(): DashboardCardId[] {
 export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManageOrders }: DashboardProps) {
   const [cardOrder, setCardOrder] = useState<DashboardCardId[]>(loadDashboardCardOrder);
   const [draggedCard, setDraggedCard] = useState<DashboardCardId | null>(null);
-  const currentHolding = metrics.holdingEntries[0]
-    ? `${money(metrics.holdingEntries[0].entry, 4)} / ${metrics.holdingEntries[0].asset}`
-    : "No coin lots";
 
   useEffect(() => {
     window.localStorage.setItem(DASHBOARD_LAYOUT_KEY, JSON.stringify(cardOrder));
@@ -89,7 +86,26 @@ export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManag
     if (cardId === "pnl") return <MetricCard label="DI Profit / Loss" value={money(metrics.pnl)} tone={metrics.pnl >= 0 ? "green" : "red"} />;
     if (cardId === "activeOrders") return <MetricCard label="Active Orders" value={String(metrics.activeOrders.length)} />;
     if (cardId === "marketPrices") return <MarketPricesCard prices={metrics.prices} />;
-    if (cardId === "currentHolding") return <MetricCard label="Current Holding Entry" value={currentHolding} />;
+    if (cardId === "currentHolding") {
+      return (
+        <article className="metric-card holding-entry-card">
+          <span>Current Holding Entry</span>
+          {metrics.holdingEntries.length ? (
+            <div className="holding-entry-list">
+              {metrics.holdingEntries.map((entry) => (
+                <div key={entry.asset} className="holding-entry-row">
+                  <b>{entry.asset}</b>
+                  <strong>{money(entry.entry, 4)}</strong>
+                  <small>{amount(entry.amount)} held</small>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <strong>No coin lots</strong>
+          )}
+        </article>
+      );
+    }
     if (cardId === "forecast") {
       return <ForecastCard forecast={metrics.forecast} mode={forecastMode} onModeChange={onForecastModeChange} />;
     }

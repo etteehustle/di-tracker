@@ -63,6 +63,49 @@
   gap: 6px;
 }
 
+.holding-entry-card {
+  min-height: 156px;
+}
+
+.holding-entry-list {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+}
+
+.holding-entry-row {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: baseline;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.holding-entry-row b,
+.holding-entry-row small {
+  font-family: var(--mono);
+}
+
+.holding-entry-row b {
+  color: var(--orange-2);
+  font-size: 12px;
+}
+
+.holding-entry-row strong {
+  justify-self: end;
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+.holding-entry-row small {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 11px;
+}
+
 .price-list strong {
   font-size: 17px;
   line-height: 1.15;

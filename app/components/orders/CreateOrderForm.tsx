@@ -1,9 +1,12 @@
 import { Plus } from "lucide-react";
 import type { FormEvent } from "react";
+import { useEffect, useState } from "react";
 import type { Asset, MarketContextTag, OrderEvaluation, ProductType } from "../../lib/domain/types";
+import { dateTimeInput, parseDateTimeInput } from "../../lib/domain/format";
 import { contextTags, type OrderDraft } from "../../lib/order-draft";
 import type { AppState } from "../../lib/domain/types";
 import { AssetSelect } from "../ui/AssetSelect";
+import { FormattedNumberInput } from "../ui/FormattedNumberInput";
 import { SectionHeading } from "../ui/SectionHeading";
 
 type CreateOrderFormProps = {
@@ -71,12 +74,12 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
 
         <label>
           Start
-          <input type="datetime-local" value={value.startTime} onChange={(event) => update("startTime", event.target.value)} />
+          <DateTimeField value={value.startTime} onChange={(nextValue) => update("startTime", nextValue)} />
         </label>
 
         <label>
           Settlement
-          <input type="datetime-local" value={value.settlementTime} onChange={(event) => update("settlementTime", event.target.value)} />
+          <DateTimeField value={value.settlementTime} onChange={(nextValue) => update("settlementTime", nextValue)} />
         </label>
 
         <NumericField label="Premium amount" value={value.expectedPremiumAmount} onChange={(amount) => update("expectedPremiumAmount", amount)} />
@@ -133,7 +136,31 @@ function NumericField({ label, value, onChange }: { label: string; value: number
   return (
     <label>
       {label}
-      <input type="number" step="any" value={value} onChange={(event) => onChange(Number(event.target.value))} />
+      <FormattedNumberInput value={value} onChange={onChange} />
     </label>
+  );
+}
+
+function DateTimeField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [displayValue, setDisplayValue] = useState(dateTimeInput(value));
+
+  useEffect(() => {
+    setDisplayValue(dateTimeInput(value));
+  }, [value]);
+
+  function commit(nextDisplayValue: string) {
+    setDisplayValue(nextDisplayValue);
+    const parsed = parseDateTimeInput(nextDisplayValue);
+    if (parsed) onChange(parsed);
+  }
+
+  return (
+    <input
+      inputMode="numeric"
+      placeholder="dd/MM/YYYY HH:mm"
+      value={displayValue}
+      onChange={(event) => commit(event.target.value)}
+      onBlur={() => setDisplayValue(dateTimeInput(value))}
+    />
   );
 }
