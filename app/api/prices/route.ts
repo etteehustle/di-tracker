@@ -1,4 +1,5 @@
 import type { PriceSnapshot, UnderlyingAsset } from "../../lib/domain/types";
+import { environment } from "../../environment";
 
 const OKX_INSTRUMENTS: Record<Exclude<UnderlyingAsset, "USDT">, string> = {
   SOL: "SOL-USDT",
@@ -100,6 +101,17 @@ export async function GET() {
     try {
       return Response.json({ prices: await fetchCoinGeckoPrices(), source: "COINGECKO" });
     } catch {
+      if (!environment.mock.enabled) {
+        return Response.json(
+          {
+            prices: [],
+            source: "NONE",
+            warning: okxError instanceof Error ? okxError.message : "OKX price refresh failed"
+          },
+          { status: 503 }
+        );
+      }
+
       return Response.json(
         {
           prices: fallbackMockPrices(),

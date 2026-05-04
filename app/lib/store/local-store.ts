@@ -1,9 +1,63 @@
 "use client";
 
 import type { AppState } from "../domain/types";
+import { environment } from "../../environment";
 import { seedState } from "./mock-data";
 
-const STORAGE_KEY = "di-tracker-state-v1";
+const now = "2026-05-03T00:00:00.000Z";
+
+const emptyState: AppState = {
+  user: {
+    id: "user_main",
+    name: "Personal DI Operator",
+    baseCurrency: "USDT",
+    createdAt: now,
+    updatedAt: now
+  },
+  portfolio: {
+    id: "portfolio_main",
+    userId: "user_main",
+    name: "Main Portfolio",
+    baseCurrency: "USDT",
+    createdAt: now,
+    updatedAt: now
+  },
+  pockets: [
+    {
+      id: "pocket_core_sol",
+      portfolioId: "portfolio_main",
+      name: "Core SOL DI",
+      status: "ACTIVE",
+      mergedIntoPocketId: null,
+      mergedAt: null,
+      createdAt: now,
+      updatedAt: now,
+      note: "Primary DI pocket"
+    },
+    {
+      id: "pocket_extra",
+      portfolioId: "portfolio_main",
+      name: "Extra Capital",
+      status: "ACTIVE",
+      mergedIntoPocketId: null,
+      mergedAt: null,
+      createdAt: now,
+      updatedAt: now,
+      note: "Secondary DI pocket"
+    }
+  ],
+  capitalMovements: [],
+  ledgerEntries: [],
+  costBasisLots: [],
+  orders: [],
+  priceSnapshots: [],
+  orderEvaluations: [],
+  auditLogs: []
+};
+
+function getInitialState(): AppState {
+  return environment.mock.enabled ? seedState : emptyState;
+}
 
 function getBrowserStorage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -14,23 +68,23 @@ function getBrowserStorage(): Storage | null {
 
 export function loadState(): AppState {
   const storage = getBrowserStorage();
-  if (!storage) return seedState;
-  const raw = storage.getItem(STORAGE_KEY);
-  if (!raw) return seedState;
+  if (!storage) return getInitialState();
+  const raw = storage.getItem(environment.storageKey);
+  if (!raw) return getInitialState();
   try {
     return JSON.parse(raw) as AppState;
   } catch {
-    return seedState;
+    return getInitialState();
   }
 }
 
 export function saveState(state: AppState): void {
   const storage = getBrowserStorage();
   if (!storage) return;
-  storage.setItem(STORAGE_KEY, JSON.stringify(state));
+  storage.setItem(environment.storageKey, JSON.stringify(state));
 }
 
 export function resetState(): AppState {
-  getBrowserStorage()?.removeItem(STORAGE_KEY);
-  return seedState;
+  getBrowserStorage()?.removeItem(environment.storageKey);
+  return getInitialState();
 }

@@ -1,4 +1,5 @@
 import { Activity, BarChart3 } from "lucide-react";
+import { environment } from "../../environment";
 
 type RoadmapProps = {
   onReset: () => void;
@@ -27,7 +28,9 @@ export function Roadmap({ onReset }: RoadmapProps) {
           </p>
         </article>
       </div>
-      <button className="danger" onClick={onReset}>Reset local mock data</button>
+      <button className="danger" onClick={onReset}>
+        Reset local {environment.mock.enabled ? "mock data" : "data"}
+      </button>
     </section>
   );
 }

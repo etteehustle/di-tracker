@@ -9,6 +9,7 @@ import { PocketsView } from "./components/pockets/PocketsView";
 import { PortfolioView } from "./components/portfolio/PortfolioView";
 import { Roadmap } from "./components/roadmap/Roadmap";
 import { AppShell } from "./components/shell/AppShell";
+import { environment } from "./environment";
 import { dateTime } from "./lib/domain/format";
 import type { AppState, DIOrder, ForecastMode } from "./lib/domain/types";
 import { emptyOrder, type OrderDraft } from "./lib/order-draft";
@@ -34,7 +35,7 @@ export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
   const [tab, setTab] = useState<Tab>("dashboard");
   const [forecastMode, setForecastMode] = useState<ForecastMode>("SETTLED_AVERAGE");
-  const [priceStatus, setPriceStatus] = useState("Mock prices loaded");
+  const [priceStatus, setPriceStatus] = useState(environment.mock.enabled ? "Mock prices loaded" : "No prices loaded");
   const [orderForm, setOrderForm] = useState<OrderDraft>(emptyOrder);
 
   useEffect(() => setState(loadState()), []);
@@ -79,7 +80,11 @@ export default function Home() {
       setState((current) => current ? { ...current, priceSnapshots: [...snapshots, ...current.priceSnapshots] } : current);
       setPriceStatus(`Fresh prices: ${dateTime(snapshots[0].capturedAt)}`);
     } catch {
-      setPriceStatus("Price API failed. Using last known/mock prices.");
+      setPriceStatus(
+        environment.mock.enabled
+          ? "Price API failed. Using last known/mock prices."
+          : "Price API failed. Mock prices are disabled."
+      );
     }
   }
 
