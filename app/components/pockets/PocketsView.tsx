@@ -2,12 +2,22 @@ import { useState, type FormEvent } from "react";
 import { amount, money } from "../../lib/domain/format";
 import type { AppState } from "../../lib/domain/types";
 import { getAvailableBalances } from "../../lib/services/ledger-service";
-import { Badge } from "../ui/Badge";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
-import { FormattedNumberInput } from "../ui/FormattedNumberInput";
-import { Input } from "../ui/Input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from "@/components/ui/dialog";
+import { Field, FieldLabel } from "@/components/ui/field";
+import { FormattedNumberInput } from "../inputs/FormattedNumberInput";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type PocketsViewProps = {
   state: AppState;
@@ -20,17 +30,21 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
   const [depositAmount, setDepositAmount] = useState(500);
   const [depositPocketId, setDepositPocketId] = useState(activePockets[0]?.id ?? "");
   const [depositNote, setDepositNote] = useState("New DI capital");
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [mergeSourceId, setMergeSourceId] = useState("pocket_extra");
+  const [mergeTargetId, setMergeTargetId] = useState("pocket_core_sol");
+  const [mergeNote, setMergeNote] = useState("Merge back to core");
 
   function submitDeposit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     onDeposit(depositPocketId, depositAmount, depositNote);
   }
 
-  function mergeByPrompt() {
-    const source = window.prompt("Source pocket id", "pocket_extra");
-    const target = window.prompt("Target pocket id", "pocket_core_sol");
-    const note = window.prompt("Merge note", "Merge back to core");
-    if (source && target && note) onMerge(source, target, note);
+  function submitMerge(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!mergeSourceId.trim() || !mergeTargetId.trim() || !mergeNote.trim()) return;
+    onMerge(mergeSourceId, mergeTargetId, mergeNote);
+    setMergeOpen(false);
   }
 
   return (
@@ -40,7 +54,7 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
           const balances = getAvailableBalances(state, pocket.id);
           return (
             <Card className="card" key={pocket.id}>
-              <Badge label={pocket.status} tone={pocket.status.toLowerCase()} />
+              <Badge variant="secondary" className={pocket.status.toLowerCase()}>{pocket.status}</Badge>
               <h3>{pocket.name}</h3>
               <p>{pocket.note}</p>
               <div className="mini-list">
@@ -65,11 +79,13 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {activePockets.map((pocket) => (
-                  <SelectItem key={pocket.id} value={pocket.id}>
-                    {pocket.name}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {activePockets.map((pocket) => (
+                    <SelectItem key={pocket.id} value={pocket.id}>
+                      {pocket.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </label>
@@ -86,7 +102,37 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
 
           <Button className="wide" type="submit">Create deposit</Button>
         </form>
-        <Button variant="secondary" onClick={mergeByPrompt}>Merge pockets by id</Button>
+        <Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
+          <DialogTrigger asChild>
+            <Button variant="secondary">Merge pockets by id</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Merge Pockets</DialogTitle>
+              <DialogDescription>
+                Move capital from a source pocket into a target pocket.
+              </DialogDescription>
+            </DialogHeader>
+            <form className="form-grid" onSubmit={submitMerge}>
+              <Field>
+                <FieldLabel htmlFor="merge-source">Source pocket id</FieldLabel>
+                <Input id="merge-source" required value={mergeSourceId} onChange={(event) => setMergeSourceId(event.target.value)} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="merge-target">Target pocket id</FieldLabel>
+                <Input id="merge-target" required value={mergeTargetId} onChange={(event) => setMergeTargetId(event.target.value)} />
+              </Field>
+              <Field className="wide">
+                <FieldLabel htmlFor="merge-note">Merge note</FieldLabel>
+                <Input id="merge-note" required value={mergeNote} onChange={(event) => setMergeNote(event.target.value)} />
+              </Field>
+              <DialogFooter className="wide">
+                <Button type="button" variant="ghost" onClick={() => setMergeOpen(false)}>Cancel</Button>
+                <Button type="submit">Merge pockets</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </Card>
     </div>
   );

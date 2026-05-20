@@ -3,15 +3,15 @@ import type { FormEvent } from "react";
 import type { Asset, MarketContextTag, OrderEvaluation, ProductType } from "../../lib/domain/types";
 import { contextTags, type OrderDraft } from "../../lib/order-draft";
 import type { AppState } from "../../lib/domain/types";
-import { AssetSelect } from "../ui/AssetSelect";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
-import { Checkbox } from "../ui/Checkbox";
-import { DateTimePicker } from "../ui/DateTimePicker";
-import { FormattedNumberInput } from "../ui/FormattedNumberInput";
-import { Input } from "../ui/Input";
-import { SectionHeading } from "../ui/SectionHeading";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select";
+import { AssetSelect } from "../inputs/AssetSelect";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { DateTimePicker } from "../inputs/DateTimePicker";
+import { FormattedNumberInput } from "../inputs/FormattedNumberInput";
+import { Input } from "@/components/ui/input";
+import { SectionHeading } from "../display/SectionHeading";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type CreateOrderFormProps = {
   state: AppState;
@@ -53,11 +53,13 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {state.pockets.filter((pocket) => pocket.status === "ACTIVE").map((pocket) => (
-                <SelectItem key={pocket.id} value={pocket.id}>
-                  {pocket.name}
-                </SelectItem>
-              ))}
+              <SelectGroup>
+                {state.pockets.filter((pocket) => pocket.status === "ACTIVE").map((pocket) => (
+                  <SelectItem key={pocket.id} value={pocket.id}>
+                    {pocket.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
         </label>
@@ -69,8 +71,10 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="BUY_LOW">Buy Low</SelectItem>
-              <SelectItem value="SELL_HIGH">Sell High</SelectItem>
+              <SelectGroup>
+                <SelectItem value="BUY_LOW">Buy Low</SelectItem>
+                <SelectItem value="SELL_HIGH">Sell High</SelectItem>
+              </SelectGroup>
             </SelectContent>
           </Select>
         </label>
@@ -128,7 +132,7 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
             <label key={tag} className="check-label">
               <Checkbox
                 checked={value.marketContextTags.includes(tag)}
-                onChange={(event) => toggleTag(tag, event.target.checked)}
+                onCheckedChange={(checked) => toggleTag(tag, checked === true)}
               />
               {tag}
             </label>

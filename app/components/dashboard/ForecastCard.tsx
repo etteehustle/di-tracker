@@ -1,8 +1,8 @@
 import type { ForecastMode } from "../../lib/domain/types";
 import { money } from "../../lib/domain/format";
 import type { DashboardMetrics } from "../../lib/view-models";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 type ForecastCardProps = {
   forecast: DashboardMetrics["forecast"];

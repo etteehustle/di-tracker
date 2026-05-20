@@ -4,13 +4,15 @@ import type { AppState, DIOrder, OrderEvaluation } from "../../lib/domain/types"
 import type { OrderDraft } from "../../lib/order-draft";
 import { activeOrderPendingPremiumUSDT } from "../../lib/services/portfolio-service";
 import type { DashboardMetrics, OrderSettlementResult } from "../../lib/view-models";
-import { Badge } from "../ui/Badge";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
-import { SectionHeading } from "../ui/SectionHeading";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/Tabs";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { SectionHeading } from "../display/SectionHeading";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CreateOrderForm } from "./CreateOrderForm";
 import { OrderCard } from "./OrderCard";
+
+type OrdersTab = "active" | "history" | "create";
 
 type OrdersViewProps = {
   state: AppState;
@@ -33,7 +35,7 @@ export function OrdersView({
   onSettleOrder,
   onDeleteOrder
 }: OrdersViewProps) {
-  const [ordersTab, setOrdersTab] = useState("active");
+  const [ordersTab, setOrdersTab] = useState<OrdersTab>("active");
   const activeOrders = state.orders.filter((order) => order.status === "ACTIVE" && !order.isDeleted);
   const historyOrders = state.orders.filter((order) => order.status !== "ACTIVE" && !order.isDeleted);
 
@@ -74,41 +76,52 @@ export function OrdersView({
   }
 
   return (
-    <Tabs value={ordersTab} onValueChange={setOrdersTab} className="orders-tabs">
-      <TabsList aria-label="Order views">
-        <TabsTrigger value="active">
+    <section className="orders-tabs">
+      <ToggleGroup
+        type="single"
+        value={ordersTab}
+        onValueChange={(value) => value && setOrdersTab(value as OrdersTab)}
+        aria-label="Order views"
+      >
+        <ToggleGroupItem value="active">
           Active
-          <Badge label={String(activeOrders.length)} tone="active" className="tab-count" />
-        </TabsTrigger>
-        <TabsTrigger value="history">
+          <Badge variant="secondary" className="tab-count">{activeOrders.length}</Badge>
+        </ToggleGroupItem>
+        <ToggleGroupItem value="history">
           History
-          <Badge label={String(historyOrders.length)} className="tab-count" />
-        </TabsTrigger>
-        <TabsTrigger value="create">Create</TabsTrigger>
-      </TabsList>
+          <Badge variant="secondary" className="tab-count">{historyOrders.length}</Badge>
+        </ToggleGroupItem>
+        <ToggleGroupItem value="create">Create</ToggleGroupItem>
+      </ToggleGroup>
 
-      <TabsContent value="active">
-        <SectionHeading
-          title="Active Orders"
-          meta={`${money(metrics.pendingPremium)} pending premium`}
-        />
-        {renderOrderList(activeOrders, "No active orders", "Create a new order when you are ready.")}
-      </TabsContent>
+      <div className="orders-panel">
+        {ordersTab === "active" && (
+          <>
+            <SectionHeading
+              title="Active Orders"
+              meta={`${money(metrics.pendingPremium)} pending premium`}
+            />
+            {renderOrderList(activeOrders, "No active orders", "Create a new order when you are ready.")}
+          </>
+        )}
 
-      <TabsContent value="history">
-        <SectionHeading title="History Orders" meta={`${historyOrders.length} settled orders`} />
-        {renderOrderList(historyOrders, "No history orders")}
-      </TabsContent>
+        {ordersTab === "history" && (
+          <>
+            <SectionHeading title="History Orders" meta={`${historyOrders.length} settled orders`} />
+            {renderOrderList(historyOrders, "No history orders")}
+          </>
+        )}
 
-      <TabsContent value="create">
-      <CreateOrderForm
-        state={state}
-        value={draft}
-        evaluation={draftEvaluation}
-        onChange={onDraftChange}
-          onSubmit={createOrder}
-      />
-      </TabsContent>
-    </Tabs>
+        {ordersTab === "create" && (
+          <CreateOrderForm
+            state={state}
+            value={draft}
+            evaluation={draftEvaluation}
+            onChange={onDraftChange}
+            onSubmit={createOrder}
+          />
+        )}
+      </div>
+    </section>
   );
 }

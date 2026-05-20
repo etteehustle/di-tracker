@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { formatNumericInput, formatNumericInputText, parseFormattedNumber } from "../../lib/domain/number-format";
-import { Input } from "./Input";
+import { Input } from "@/components/ui/input";
 
 type FormattedNumberInputProps = {
   value: number;

@@ -97,7 +97,7 @@
     grid-template-columns: repeat(4, 1fr);
   }
 
-  .ui-popover-content {
+  .datetime-popover {
     max-width: min(16.25rem, calc(100vw - 24px));
   }
 
@@ -111,14 +111,8 @@
     padding: 10px;
   }
 
-  .ui-calendar {
-    --rdp-day-width: 1.65rem;
-    --rdp-day-height: 1.65rem;
-    --rdp-day_button-width: 1.55rem;
-    --rdp-day_button-height: 1.55rem;
-    --rdp-nav_button-width: 1.72rem;
-    --rdp-nav_button-height: 1.72rem;
-    --rdp-nav-height: 1.95rem;
+  .datetime-calendar {
+    --cell-size: 1.65rem;
     font-size: 11px;
   }
 }

@@ -5,12 +5,13 @@ import type { AppState } from "../../lib/domain/types";
 import { getLedgerBalances } from "../../lib/services/ledger-service";
 import type { PortfolioBuyInput } from "../../lib/services/portfolio-adjustment-service";
 import type { DashboardMetrics } from "../../lib/view-models";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
-import { FormattedNumberInput } from "../ui/FormattedNumberInput";
-import { Input } from "../ui/Input";
-import { MetricCard } from "../ui/MetricCard";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/Select";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { FormattedNumberInput } from "../inputs/FormattedNumberInput";
+import { Input } from "@/components/ui/input";
+import { MetricCard } from "../display/MetricCard";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const buyAssets: PortfolioBuyInput["asset"][] = ["SOL", "OKSOL", "BTC", "ETH"];
 
@@ -48,26 +49,26 @@ export function PortfolioView({ state, metrics, onRecordBuy }: PortfolioViewProp
           <MetricCard label="Pending Premium" value={money(metrics.pendingPremium)} />
         </div>
         <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Asset</th>
-                <th>Amount</th>
-                <th>Underlying</th>
-                <th>Value</th>
-              </tr>
-            </thead>
-            <tbody>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Asset</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Underlying</TableHead>
+                <TableHead>Value</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {getLedgerBalances(state).map((balance) => (
-                <tr key={balance.asset}>
-                  <td>{balance.asset}</td>
-                  <td>{amount(balance.amount)}</td>
-                  <td>{balance.underlyingAsset}</td>
-                  <td>{money(balance.valueUSDT)}</td>
-                </tr>
+                <TableRow key={balance.asset}>
+                  <TableCell>{balance.asset}</TableCell>
+                  <TableCell>{amount(balance.amount)}</TableCell>
+                  <TableCell>{balance.underlyingAsset}</TableCell>
+                  <TableCell>{money(balance.valueUSDT)}</TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </section>
 
@@ -81,11 +82,13 @@ export function PortfolioView({ state, metrics, onRecordBuy }: PortfolioViewProp
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {buyAssets.map((asset) => (
-                  <SelectItem key={asset} value={asset}>
-                    {asset}
-                  </SelectItem>
-                ))}
+                <SelectGroup>
+                  {buyAssets.map((asset) => (
+                    <SelectItem key={asset} value={asset}>
+                      {asset}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
               </SelectContent>
             </Select>
           </label>

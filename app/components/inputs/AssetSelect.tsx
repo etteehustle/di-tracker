@@ -1,5 +1,5 @@
 import type { Asset } from "../../lib/domain/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./Select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const assets: Asset[] = ["USDT", "SOL", "OKSOL", "BTC", "ETH"];
 
@@ -15,11 +15,13 @@ export function AssetSelect({ value, onChange }: AssetSelectProps) {
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        {assets.map((asset) => (
-          <SelectItem key={asset} value={asset}>
-            {asset}
-          </SelectItem>
-        ))}
+        <SelectGroup>
+          {assets.map((asset) => (
+            <SelectItem key={asset} value={asset}>
+              {asset}
+            </SelectItem>
+          ))}
+        </SelectGroup>
       </SelectContent>
     </Select>
   );
