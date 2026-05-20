@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Tab } from "../../lib/view-models";
-import { Button } from "../ui/Button";
+import { Button } from "@/components/ui/button";
 
 const tabs: Array<{ id: Tab; label: string; icon: ReactNode }> = [
   { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} /> },
@@ -41,7 +41,7 @@ export function AppShell({ activeTab, priceStatus, onTabChange, onRefreshPrices,
           <Coins />
           <div>
             <strong>DI Tracker</strong>
-            <span>SOL/OKSOL operating ledger</span>
+            <span>Crypto operating ledger</span>
           </div>
         </div>
         <nav>

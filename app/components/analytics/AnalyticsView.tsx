@@ -1,7 +1,7 @@
 import { percent } from "../../lib/domain/format";
 import type { AppState } from "../../lib/domain/types";
 import { averageFinite, hitRate } from "../../lib/services/performance-service";
-import { MetricCard } from "../ui/MetricCard";
+import { MetricCard } from "../display/MetricCard";
 
 type AnalyticsViewProps = {
   state: AppState;

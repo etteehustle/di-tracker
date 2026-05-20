@@ -1,6 +1,6 @@
 import { dateTime } from "../../lib/domain/format";
 import type { AppState } from "../../lib/domain/types";
-import { Card } from "../ui/Card";
+import { Card } from "@/components/ui/card";
 
 type AuditViewProps = {
   state: AppState;

@@ -4,12 +4,12 @@ import { CalendarIcon, Clock2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import type { DayPickerProps } from "react-day-picker";
 import { dateTimeInput } from "../../lib/domain/format";
-import { Button } from "./Button";
-import { Calendar } from "./Calendar";
-import { Card, CardContent, CardFooter } from "./Card";
-import { Field, FieldGroup, FieldLabel } from "./Field";
-import { InputGroup, InputGroupAddon, InputGroupInput } from "./InputGroup";
-import { Popover, PopoverContent, PopoverTrigger } from "./Popover";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 type DateTimePickerProps = {
   label: string;

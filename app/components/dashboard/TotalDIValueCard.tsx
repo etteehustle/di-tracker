@@ -1,6 +1,6 @@
 import { amount, money } from "../../lib/domain/format";
 import type { DashboardMetrics } from "../../lib/view-models";
-import { Card } from "../ui/Card";
+import { Card } from "@/components/ui/card";
 
 type TotalDIValueCardProps = {
   metrics: DashboardMetrics;

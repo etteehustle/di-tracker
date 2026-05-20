@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import { amount, dateTime, hoursUntil, money, percent } from "../../lib/domain/format";
 import type { DIOrder, OrderEvaluation } from "../../lib/domain/types";
 import type { OrderSettlementResult } from "../../lib/view-models";
-import { Badge } from "../ui/Badge";
-import { Button } from "../ui/Button";
-import { Card } from "../ui/Card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 type OrderCardProps = {
   order: DIOrder;
@@ -33,8 +33,8 @@ export function OrderCard({ order, evaluation, pendingPremium = 0, onSettle, onD
     <Card className={`order-card ${productTone} ${statusTone}`}>
       <div className="order-title">
         <div>
-          <Badge label={productLabel} tone={productTone} />
-          <Badge label={order.status.replaceAll("_", " ")} tone={statusTone} />
+          <Badge variant="secondary" className={productTone}>{productLabel}</Badge>
+          <Badge variant="outline" className={statusTone}>{order.status.replaceAll("_", " ")}</Badge>
         </div>
         <strong>
           {order.exchange} - {order.pair}
