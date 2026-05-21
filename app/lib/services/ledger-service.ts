@@ -1,5 +1,5 @@
 import { normalizeAsset, toUSDT } from "../domain/assets";
-import type { AppState, Asset, AssetBalance, LedgerEntry, UnderlyingAsset } from "../domain/types";
+import type { AppState, Asset, AssetBalance, ExposureBalance, LedgerEntry, UnderlyingAsset } from "../domain/types";
 
 export type BalanceScope = {
   pocketId?: string;
@@ -29,7 +29,7 @@ export function getLedgerBalances(state: AppState, scope: BalanceScope = {}): As
   });
 
   for (const entry of relevantEntries) {
-    const key = `${entry.pocketId ?? "portfolio"}:${entry.asset}`;
+    const key = scope.pocketId ? `${entry.pocketId ?? "portfolio"}:${entry.asset}` : entry.asset;
     const current = totals.get(key) ?? {
       asset: entry.asset,
       underlyingAsset: entry.underlyingAsset,
@@ -65,6 +65,30 @@ export function getActiveReservations(state: AppState, pocketId?: string): Asset
   }));
 }
 
+export function toExposureBalances(balances: AssetBalance[], prices: Record<UnderlyingAsset, number>): ExposureBalance[] {
+  const totals = new Map<UnderlyingAsset, number>();
+
+  for (const balance of balances) {
+    totals.set(balance.underlyingAsset, (totals.get(balance.underlyingAsset) ?? 0) + balance.amount);
+  }
+
+  return Array.from(totals.entries())
+    .filter(([, amount]) => Math.abs(amount) > 1e-9)
+    .map(([underlyingAsset, amount]) => ({
+      underlyingAsset,
+      amount,
+      valueUSDT: toUSDT(amount, underlyingAsset, prices)
+    }));
+}
+
+export function getLedgerExposureBalances(state: AppState, scope: BalanceScope = {}): ExposureBalance[] {
+  return toExposureBalances(getLedgerBalances(state, scope), getLatestPrices(state));
+}
+
+export function getActiveExposureReservations(state: AppState, pocketId?: string): ExposureBalance[] {
+  return toExposureBalances(getActiveReservations(state, pocketId), getLatestPrices(state));
+}
+
 export function getAvailableBalances(state: AppState, pocketId?: string): AssetBalance[] {
   const prices = getLatestPrices(state);
   const available = new Map<Asset, number>();
@@ -84,6 +108,10 @@ export function getAvailableBalances(state: AppState, pocketId?: string): AssetB
       amount: balance,
       valueUSDT: toUSDT(balance, asset, prices)
     }));
+}
+
+export function getAvailableExposureBalances(state: AppState, pocketId?: string): ExposureBalance[] {
+  return toExposureBalances(getAvailableBalances(state, pocketId), getLatestPrices(state));
 }
 
 export function makeLedgerEntry(entry: Omit<LedgerEntry, "underlyingAsset" | "createdAt">): LedgerEntry {

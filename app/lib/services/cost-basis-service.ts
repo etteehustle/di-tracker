@@ -1,5 +1,5 @@
 import { normalizeAsset } from "../domain/assets";
-import type { AppState, Asset, CostBasisLot, CostBasisStatus } from "../domain/types";
+import type { AppState, Asset, CostBasisLot, CostBasisStatus, UnderlyingAsset } from "../domain/types";
 
 const DUST_ECONOMIC_COST_USDT = 5;
 
@@ -21,6 +21,30 @@ export function getHoldingEntries(state: AppState): Array<{ asset: Asset; entry:
     current.amount += lot.amount;
     current.economicCostUSDT += lot.economicCostUSDT;
     grouped.set(key, current);
+  }
+
+  return Array.from(grouped.values())
+    .filter((item) => item.economicCostUSDT > DUST_ECONOMIC_COST_USDT)
+    .map((item) => ({
+      ...item,
+      entry: item.economicCostUSDT / item.amount
+    }));
+}
+
+export function getExposureHoldingEntries(
+  state: AppState
+): Array<{ underlyingAsset: UnderlyingAsset; entry: number; amount: number; economicCostUSDT: number }> {
+  const grouped = new Map<UnderlyingAsset, { underlyingAsset: UnderlyingAsset; amount: number; economicCostUSDT: number }>();
+
+  for (const lot of state.costBasisLots.filter((item) => item.status === "OPEN" && item.amount > 1e-9)) {
+    const current = grouped.get(lot.underlyingAsset) ?? {
+      underlyingAsset: lot.underlyingAsset,
+      amount: 0,
+      economicCostUSDT: 0
+    };
+    current.amount += lot.amount;
+    current.economicCostUSDT += lot.economicCostUSDT;
+    grouped.set(lot.underlyingAsset, current);
   }
 
   return Array.from(grouped.values())

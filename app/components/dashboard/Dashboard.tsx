@@ -21,6 +21,10 @@ type DashboardProps = {
   onManageOrders: () => void;
 };
 
+function exposureLabel(asset: string): string {
+  return asset === "USDT" ? "USDT" : `${asset}-equivalent`;
+}
+
 type DashboardCardId =
   | "totalDIValue"
   | "netDeposited"
@@ -91,12 +95,12 @@ export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManag
     if (cardId === "currentHolding") {
       return (
         <Card className="metric-card holding-entry-card">
-          <span>Current Holding Entry</span>
-          {metrics.holdingEntries.length ? (
+          <span>Exposure Holding Entry</span>
+          {metrics.exposureHoldingEntries.length ? (
             <div className="holding-entry-list">
-              {metrics.holdingEntries.map((entry) => (
-                <div key={entry.asset} className="holding-entry-row">
-                  <b>{entry.asset}</b>
+              {metrics.exposureHoldingEntries.map((entry) => (
+                <div key={entry.underlyingAsset} className="holding-entry-row">
+                  <b>{exposureLabel(entry.underlyingAsset)}</b>
                   <strong>{money(entry.entry, 4)}</strong>
                   <small>{amount(entry.amount)} held</small>
                 </div>

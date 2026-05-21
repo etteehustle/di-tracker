@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { AppState, DIOrder } from "../lib/domain/types";
 import { normalizeAsset } from "../lib/domain/assets";
-import { getHoldingEntries, weightedAverageEntry } from "../lib/services/cost-basis-service";
+import { getExposureHoldingEntries, getHoldingEntries, weightedAverageEntry } from "../lib/services/cost-basis-service";
+import { getLedgerBalances, getLedgerExposureBalances } from "../lib/services/ledger-service";
 import { getCurrentDIValueUSDT, getDIPnlUSDT, getNetDepositedCapitalUSDT, makeForecast } from "../lib/services/portfolio-service";
 import { recordPortfolioBuy } from "../lib/services/portfolio-adjustment-service";
 import { mergePockets } from "../lib/services/pocket-service";
@@ -30,6 +31,22 @@ describe("DI accounting services", () => {
     const state = cloneState();
     expect(weightedAverageEntry(state.costBasisLots, "SOL")).toBeCloseTo(84.1354, 4);
     expect(weightedAverageEntry(state.costBasisLots, "OKSOL")).toBeCloseTo(84.1354, 4);
+  });
+
+  it("keeps actual asset balances separate while grouping SOL/OKSOL exposure", () => {
+    const state = recordPortfolioBuy(cloneState(), {
+      asset: "SOL",
+      amount: 10,
+      costUSDT: 800,
+      note: "test SOL buy"
+    });
+
+    const actualBalances = getLedgerBalances(state);
+    const exposureBalances = getLedgerExposureBalances(state);
+
+    expect(actualBalances.find((balance) => balance.asset === "SOL")?.amount).toBeCloseTo(10, 6);
+    expect(actualBalances.find((balance) => balance.asset === "OKSOL")?.amount).toBeCloseTo(63.71871989, 6);
+    expect(exposureBalances.find((balance) => balance.underlyingAsset === "SOL")?.amount).toBeCloseTo(73.71871989, 6);
   });
 
   it("creates effective entry for Buy Low hit", () => {
@@ -131,6 +148,24 @@ describe("DI accounting services", () => {
     expect(entries.find((entry) => entry.asset === "OKSOL")?.entry).toBeCloseTo(84.1354, 4);
     expect(getNetDepositedCapitalUSDT(withEth)).toBeCloseTo(getNetDepositedCapitalUSDT(state) + 13000, 6);
     expect(withEth.costBasisLots.find((lot) => lot.asset === "BTC")?.pocketId).toBeNull();
+  });
+
+  it("groups current holding entries by exposure for the main DI view", () => {
+    const state = recordPortfolioBuy(cloneState(), {
+      asset: "SOL",
+      amount: 10,
+      costUSDT: 800,
+      note: "test SOL buy"
+    });
+
+    const actualEntries = getHoldingEntries(state);
+    const exposureEntries = getExposureHoldingEntries(state);
+    const solExposure = exposureEntries.find((entry) => entry.underlyingAsset === "SOL");
+
+    expect(actualEntries.find((entry) => entry.asset === "SOL")?.amount).toBeCloseTo(10, 6);
+    expect(actualEntries.find((entry) => entry.asset === "OKSOL")?.amount).toBeCloseTo(63.71871989, 6);
+    expect(solExposure?.amount).toBeCloseTo(73.71871989, 6);
+    expect(solExposure?.entry).toBeCloseTo((5361 + 800) / 73.71871989, 6);
   });
 
   it("keeps total DI PnL unchanged when merging pockets", () => {

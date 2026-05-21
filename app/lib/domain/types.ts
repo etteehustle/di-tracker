@@ -214,3 +214,9 @@ export type AssetBalance = {
   amount: number;
   valueUSDT: number;
 };
+
+export type ExposureBalance = {
+  underlyingAsset: UnderlyingAsset;
+  amount: number;
+  valueUSDT: number;
+};

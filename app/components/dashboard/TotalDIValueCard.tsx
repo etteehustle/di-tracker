@@ -6,28 +6,32 @@ type TotalDIValueCardProps = {
   metrics: DashboardMetrics;
 };
 
+function exposureLabel(asset: string): string {
+  return asset === "USDT" ? "USDT" : `${asset}-equivalent`;
+}
+
 export function TotalDIValueCard({ metrics }: TotalDIValueCardProps) {
   return (
     <Card className="metric-card total-value-card blue">
       <span>Total DI Value</span>
       <strong>{money(metrics.diValue)}</strong>
       <div className="asset-breakdown">
-        <b>Available balance</b>
-        {metrics.availableBalances.length ? (
-          metrics.availableBalances.map((balance) => (
-            <span key={`available-${balance.asset}-${balance.amount}`}>
-              {balance.asset}: {amount(balance.amount)} {balance.asset} = {money(balance.valueUSDT)}
+        <b>Available exposure</b>
+        {metrics.availableExposureBalances.length ? (
+          metrics.availableExposureBalances.map((balance) => (
+            <span key={`available-${balance.underlyingAsset}-${balance.amount}`}>
+              {balance.underlyingAsset}: {amount(balance.amount)} {exposureLabel(balance.underlyingAsset)} = {money(balance.valueUSDT)}
             </span>
           ))
         ) : (
-          <span>No free balance</span>
+          <span>No free exposure</span>
         )}
 
-        <b>Locked in active orders</b>
-        {metrics.activeReservations.length ? (
-          metrics.activeReservations.map((balance) => (
-            <span key={`locked-${balance.asset}-${balance.amount}`}>
-              {balance.asset}: {amount(balance.amount)} {balance.asset} = {money(balance.valueUSDT)}
+        <b>Locked exposure in active orders</b>
+        {metrics.activeExposureReservations.length ? (
+          metrics.activeExposureReservations.map((balance) => (
+            <span key={`locked-${balance.underlyingAsset}-${balance.amount}`}>
+              {balance.underlyingAsset}: {amount(balance.amount)} {exposureLabel(balance.underlyingAsset)} = {money(balance.valueUSDT)}
             </span>
           ))
         ) : (

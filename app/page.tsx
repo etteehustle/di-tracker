@@ -36,8 +36,14 @@ import { dateTime } from "./lib/domain/format";
 import { parseFormattedNumber } from "./lib/domain/number-format";
 import type { AppState, DIOrder, ForecastMode } from "./lib/domain/types";
 import { emptyOrder, type OrderDraft } from "./lib/order-draft";
-import { getHoldingEntries } from "./lib/services/cost-basis-service";
-import { getActiveReservations, getAvailableBalances, getLatestPrices } from "./lib/services/ledger-service";
+import { getExposureHoldingEntries, getHoldingEntries } from "./lib/services/cost-basis-service";
+import {
+  getActiveExposureReservations,
+  getActiveReservations,
+  getAvailableBalances,
+  getAvailableExposureBalances,
+  getLatestPrices
+} from "./lib/services/ledger-service";
 import { createOrder, softDeleteOrder } from "./lib/services/order-service";
 import { evaluateOrder } from "./lib/services/order-evaluation-service";
 import { fetchMarketPrices } from "./lib/services/price-service";
@@ -95,11 +101,14 @@ export default function Home() {
       activeOrders,
       availableBalances: getAvailableBalances(state),
       activeReservations: getActiveReservations(state),
+      availableExposureBalances: getAvailableExposureBalances(state),
+      activeExposureReservations: getActiveExposureReservations(state),
       pendingPremium: getPendingPremiumUSDT(state),
       forecast,
       nextSettlement,
       portfolioTotal: getPortfolioTotalValueUSDT(state),
-      holdingEntries: getHoldingEntries(state)
+      holdingEntries: getHoldingEntries(state),
+      exposureHoldingEntries: getExposureHoldingEntries(state)
     };
   }, [state, forecastMode]);
 
