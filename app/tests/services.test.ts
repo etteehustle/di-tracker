@@ -157,4 +157,11 @@ describe("DI accounting services", () => {
     expect(next.orders.length).toBe(beforeCount);
     expect(next.orders.find((order) => order.id === "order_sell_high_seed")?.status).toBe("DELETED");
   });
+
+  it("prevents deleting settled orders because ledger and cost basis are already materialized", () => {
+    const state = cloneState();
+    expect(() => softDeleteOrder(state, "order_buy_low_seed", "test delete")).toThrow(
+      "Only active orders can be deleted"
+    );
+  });
 });

@@ -48,6 +48,9 @@ export function softDeleteOrder(state: AppState, orderId: string, reason: string
   const now = new Date().toISOString();
   const order = state.orders.find((item) => item.id === orderId);
   if (!order) throw new Error("Order not found");
+  if (order.status !== "ACTIVE") {
+    throw new Error("Only active orders can be deleted. Settled orders require a settlement correction.");
+  }
 
   return {
     ...state,
