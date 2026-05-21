@@ -139,6 +139,28 @@
   border-radius: var(--radius);
 }
 
+.forecast-modes {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.forecast-target-field {
+  display: grid;
+  gap: 4px;
+}
+
+.forecast-target-field span,
+.forecast-detail small {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.forecast-detail {
+  display: grid;
+  gap: 4px;
+}
+
 .segmented .segmented-button {
   min-height: 30px;
   border-radius: 6px;

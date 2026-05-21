@@ -18,6 +18,8 @@ type DashboardProps = {
   metrics: DashboardMetrics;
   forecastMode: ForecastMode;
   onForecastModeChange: (mode: ForecastMode) => void;
+  targetDailyReturnPercent: number;
+  onTargetDailyReturnPercentChange: (value: number) => void;
   onManageOrders: () => void;
 };
 
@@ -64,7 +66,14 @@ function loadDashboardCardOrder(): DashboardCardId[] {
   }
 }
 
-export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManageOrders }: DashboardProps) {
+export function Dashboard({
+  metrics,
+  forecastMode,
+  onForecastModeChange,
+  targetDailyReturnPercent,
+  onTargetDailyReturnPercentChange,
+  onManageOrders
+}: DashboardProps) {
   const [cardOrder, setCardOrder] = useState<DashboardCardId[]>(loadDashboardCardOrder);
   const [draggedCard, setDraggedCard] = useState<DashboardCardId | null>(null);
 
@@ -113,7 +122,15 @@ export function Dashboard({ metrics, forecastMode, onForecastModeChange, onManag
       );
     }
     if (cardId === "forecast") {
-      return <ForecastCard forecast={metrics.forecast} mode={forecastMode} onModeChange={onForecastModeChange} />;
+      return (
+        <ForecastCard
+          forecast={metrics.forecast}
+          mode={forecastMode}
+          targetDailyReturnPercent={targetDailyReturnPercent}
+          onTargetDailyReturnPercentChange={onTargetDailyReturnPercentChange}
+          onModeChange={onForecastModeChange}
+        />
+      );
     }
     return <MetricCard label="Portfolio Total Value" value={money(metrics.portfolioTotal)} />;
   }

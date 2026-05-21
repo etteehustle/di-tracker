@@ -1,8 +1,8 @@
-import { normalizeAsset } from "../domain/assets";
+import { assetPrice, normalizeAsset } from "../domain/assets";
 import type { AppState, Asset, AuditLog, CostBasisLot, DIOrder, LedgerEntry, SettlementResult } from "../domain/types";
 import { reduceLotsWeightedAverage } from "./cost-basis-service";
 import { createId } from "./id";
-import { makeLedgerEntry } from "./ledger-service";
+import { getLatestPrices, makeLedgerEntry } from "./ledger-service";
 
 type SettleInput = {
   orderId: string;
@@ -12,6 +12,21 @@ type SettleInput = {
   settledAt: string;
   note: string;
 };
+
+function buyLowHitYieldUSDT(order: DIOrder): number {
+  return Math.max(0, order.subscribedAmount * (order.termRatePercent / 100));
+}
+
+function settlementPriceUSDT(state: AppState, asset: Asset, fallbackPrice: number): number {
+  const price = assetPrice(asset, getLatestPrices(state));
+  return price > 0 ? price : fallbackPrice;
+}
+
+function subscribedCapitalValueAtStartUSDT(order: DIOrder): number {
+  if (order.subscribedCapitalValueAtStartUSDT !== undefined) return order.subscribedCapitalValueAtStartUSDT;
+  if (order.subscribedAsset === "USDT") return order.subscribedAmount;
+  return order.subscribedAmount * order.strikePrice;
+}
 
 export function settleOrder(state: AppState, input: SettleInput): AppState {
   const order = state.orders.find((item) => item.id === input.orderId);
@@ -50,6 +65,10 @@ export function settleOrder(state: AppState, input: SettleInput): AppState {
   ];
 
   let nextLots = state.costBasisLots;
+  let settlementPrice = settlementPriceUSDT(state, input.receivedAsset, order.strikePrice);
+  let premiumYieldUSDT = 0;
+  let basisReductionUSDT = 0;
+  let tradingPnlUSDT = 0;
   let realizedYieldUSDT = 0;
   let realizedPnlUSDT = 0;
 
@@ -70,25 +89,33 @@ export function settleOrder(state: AppState, input: SettleInput): AppState {
       updatedAt: input.settledAt
     };
     nextLots = [...nextLots, lot];
-    realizedYieldUSDT = Math.max(0, order.expectedPremiumAmount);
+    premiumYieldUSDT = buyLowHitYieldUSDT(order);
+    realizedYieldUSDT = premiumYieldUSDT;
   }
 
   if (order.productType === "BUY_LOW" && input.result === "NOT_HIT") {
-    realizedYieldUSDT = input.receivedAmount - order.subscribedAmount;
-    realizedPnlUSDT = realizedYieldUSDT;
+    premiumYieldUSDT = input.receivedAmount - order.subscribedAmount;
+    realizedYieldUSDT = premiumYieldUSDT;
+    realizedPnlUSDT = premiumYieldUSDT;
   }
 
   if (order.productType === "SELL_HIGH" && input.result === "HIT") {
     const reduction = reduceLotsWeightedAverage(nextLots, order.subscribedAsset, order.subscribedAmount);
+    const grossSellValueUSDT = order.subscribedAmount * order.strikePrice;
     nextLots = reduction.updatedLots;
+    premiumYieldUSDT = input.receivedAmount - grossSellValueUSDT;
+    tradingPnlUSDT = grossSellValueUSDT - reduction.costSoldUSDT;
     realizedPnlUSDT = input.receivedAmount - reduction.costSoldUSDT;
-    realizedYieldUSDT = Math.max(0, realizedPnlUSDT);
+    realizedYieldUSDT = premiumYieldUSDT;
   }
 
   if (order.productType === "SELL_HIGH" && input.result === "NOT_HIT") {
     const premiumCoin = input.receivedAmount - order.subscribedAmount;
     const averageEntry = state.costBasisLots.find((lot) => lot.underlyingAsset === normalizeAsset(order.subscribedAsset) && lot.status === "OPEN")?.effectiveEntry ?? order.strikePrice;
-    realizedYieldUSDT = Math.max(0, premiumCoin * averageEntry);
+    settlementPrice = settlementPriceUSDT(state, input.receivedAsset, averageEntry);
+    premiumYieldUSDT = Math.max(0, premiumCoin * settlementPrice);
+    basisReductionUSDT = Math.max(0, premiumCoin * averageEntry);
+    realizedYieldUSDT = premiumYieldUSDT;
     if (premiumCoin > 0) {
       nextLots = [
         ...nextLots,
@@ -118,6 +145,12 @@ export function settleOrder(state: AppState, input: SettleInput): AppState {
     receivedAsset: input.receivedAsset,
     receivedAmount: input.receivedAmount,
     settledAt: input.settledAt,
+    subscribedCapitalValueAtStartUSDT: subscribedCapitalValueAtStartUSDT(order),
+    settlementPriceUSDT: settlementPrice,
+    premiumValueAtSettlementUSDT: premiumYieldUSDT,
+    premiumYieldUSDT,
+    basisReductionUSDT,
+    tradingPnlUSDT,
     realizedYieldUSDT,
     realizedPnlUSDT,
     updatedAt: input.settledAt

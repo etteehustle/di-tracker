@@ -64,7 +64,8 @@ import type { DashboardMetrics, OrderSettlementResult, Tab } from "./lib/view-mo
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
   const [tab, setTab] = useState<Tab>("dashboard");
-  const [forecastMode, setForecastMode] = useState<ForecastMode>("SETTLED_AVERAGE");
+  const [forecastMode, setForecastMode] = useState<ForecastMode>("SETTLED_ONLY");
+  const [targetDailyReturnPercent, setTargetDailyReturnPercent] = useState(0.3);
   const [priceStatus, setPriceStatus] = useState(environment.mock.enabled ? "Mock prices loaded" : "No prices loaded");
   const [orderForm, setOrderForm] = useState<OrderDraft>(emptyOrder);
   const [settlementRequest, setSettlementRequest] = useState<{ order: DIOrder; result: OrderSettlementResult } | null>(null);
@@ -87,7 +88,7 @@ export default function Home() {
   const metrics = useMemo<DashboardMetrics | null>(() => {
     if (!state) return null;
 
-    const forecast = makeForecast(state, forecastMode);
+    const forecast = makeForecast(state, forecastMode, { targetDailyReturnRate: targetDailyReturnPercent / 100 });
     const activeOrders = state.orders.filter((order) => order.status === "ACTIVE" && !order.isDeleted);
     const nextSettlement = activeOrders
       .slice()
@@ -107,10 +108,10 @@ export default function Home() {
       forecast,
       nextSettlement,
       portfolioTotal: getPortfolioTotalValueUSDT(state),
-      holdingEntries: getHoldingEntries(state),
-      exposureHoldingEntries: getExposureHoldingEntries(state)
+      holdingEntries: getHoldingEntries(state, { hideDust: true }),
+      exposureHoldingEntries: getExposureHoldingEntries(state, { hideDust: true })
     };
-  }, [state, forecastMode]);
+  }, [state, forecastMode, targetDailyReturnPercent]);
 
   async function refreshPrices() {
     try {
@@ -232,6 +233,8 @@ export default function Home() {
           metrics={currentMetrics}
           forecastMode={forecastMode}
           onForecastModeChange={setForecastMode}
+          targetDailyReturnPercent={targetDailyReturnPercent}
+          onTargetDailyReturnPercentChange={setTargetDailyReturnPercent}
           onManageOrders={() => setTab("orders")}
         />
       );

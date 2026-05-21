@@ -1,5 +1,7 @@
 import type { AppState, AuditLog, DIOrder } from "../domain/types";
+import { toUSDT } from "../domain/assets";
 import { createId } from "./id";
+import { getLatestPrices } from "./ledger-service";
 import { evaluateOrder } from "./order-evaluation-service";
 
 export type OrderInput = Omit<
@@ -9,9 +11,14 @@ export type OrderInput = Omit<
 
 export function createOrder(state: AppState, input: OrderInput): AppState {
   const now = new Date().toISOString();
+  const prices = getLatestPrices(state);
+  const subscribedCapitalValueAtStartUSDT = input.subscribedAsset === "USDT"
+    ? input.subscribedAmount
+    : toUSDT(input.subscribedAmount, input.subscribedAsset, prices) || input.subscribedAmount * input.strikePrice;
   const order: DIOrder = {
     ...input,
     id: createId("order"),
+    subscribedCapitalValueAtStartUSDT,
     status: "ACTIVE",
     settlementResult: null,
     receivedAsset: null,
