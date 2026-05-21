@@ -20,7 +20,12 @@ export type DashboardMetrics = {
   prices: Record<UnderlyingAsset, number>;
   diValue: number;
   netDeposited: number;
+  externalDeposits: number;
+  externalWithdrawals: number;
+  internalTransfers: number;
+  diWorkingCapital: number;
   pnl: number;
+  totalPortfolioPnl: number;
   activeOrders: DIOrder[];
   availableBalances: AssetBalance[];
   activeReservations: AssetBalance[];
@@ -30,6 +35,7 @@ export type DashboardMetrics = {
   forecast: ForecastSnapshot;
   nextSettlement?: DIOrder;
   portfolioTotal: number;
+  storagePortfolioValue: number;
   holdingEntries: HoldingEntry[];
   exposureHoldingEntries: ExposureHoldingEntry[];
 };

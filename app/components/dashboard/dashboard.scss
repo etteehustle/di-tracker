@@ -1,3 +1,14 @@
+.dashboard-sections {
+  display: grid;
+  gap: 18px;
+}
+
+.dashboard-section {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -6,15 +17,6 @@
 
 .dashboard-card-slot {
   min-width: 0;
-  cursor: grab;
-}
-
-.dashboard-card-slot:active {
-  cursor: grabbing;
-}
-
-.dashboard-card-slot.dragging {
-  opacity: 0.48;
 }
 
 .dashboard-card-slot .metric-card {

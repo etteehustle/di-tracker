@@ -1,19 +1,21 @@
 import { amount, money } from "../../lib/domain/format";
 import type { DashboardMetrics } from "../../lib/view-models";
 import { Card } from "@/components/ui/card";
+import { MetricInfo } from "../display/MetricInfo";
 
 type TotalDIValueCardProps = {
   metrics: DashboardMetrics;
+  description?: string;
 };
 
 function exposureLabel(asset: string): string {
   return asset === "USDT" ? "USDT" : `${asset}-equivalent`;
 }
 
-export function TotalDIValueCard({ metrics }: TotalDIValueCardProps) {
+export function TotalDIValueCard({ metrics, description }: TotalDIValueCardProps) {
   return (
     <Card className="metric-card total-value-card blue">
-      <span>Total DI Value</span>
+      <MetricInfo label="Total DI Value" description={description} />
       <strong>{money(metrics.diValue)}</strong>
       <div className="asset-breakdown">
         <b>Available exposure</b>

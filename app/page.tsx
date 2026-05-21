@@ -40,8 +40,8 @@ import { getExposureHoldingEntries, getHoldingEntries } from "./lib/services/cos
 import {
   getActiveExposureReservations,
   getActiveReservations,
-  getAvailableBalances,
-  getAvailableExposureBalances,
+  getDIAvailableBalances,
+  getDIAvailableExposureBalances,
   getLatestPrices
 } from "./lib/services/ledger-service";
 import { createOrder, softDeleteOrder } from "./lib/services/order-service";
@@ -49,10 +49,16 @@ import { evaluateOrder } from "./lib/services/order-evaluation-service";
 import { fetchMarketPrices } from "./lib/services/price-service";
 import {
   getCurrentDIValueUSDT,
+  getDIWorkingCapitalUSDT,
   getDIPnlUSDT,
-  getNetDepositedCapitalUSDT,
+  getExternalDepositsUSDT,
+  getExternalNetDepositedCapitalUSDT,
+  getExternalWithdrawalsUSDT,
+  getInternalTransfersUSDT,
   getPendingPremiumUSDT,
   getPortfolioTotalValueUSDT,
+  getStoragePortfolioValueUSDT,
+  getTotalPortfolioPnlUSDT,
   makeForecast
 } from "./lib/services/portfolio-service";
 import { recordPortfolioBuy, type PortfolioBuyInput } from "./lib/services/portfolio-adjustment-service";
@@ -97,17 +103,23 @@ export default function Home() {
     return {
       prices: getLatestPrices(state),
       diValue: getCurrentDIValueUSDT(state),
-      netDeposited: getNetDepositedCapitalUSDT(state),
+      netDeposited: getExternalNetDepositedCapitalUSDT(state),
+      externalDeposits: getExternalDepositsUSDT(state),
+      externalWithdrawals: getExternalWithdrawalsUSDT(state),
+      internalTransfers: getInternalTransfersUSDT(state),
+      diWorkingCapital: getDIWorkingCapitalUSDT(state),
       pnl: getDIPnlUSDT(state),
+      totalPortfolioPnl: getTotalPortfolioPnlUSDT(state),
       activeOrders,
-      availableBalances: getAvailableBalances(state),
+      availableBalances: getDIAvailableBalances(state),
       activeReservations: getActiveReservations(state),
-      availableExposureBalances: getAvailableExposureBalances(state),
+      availableExposureBalances: getDIAvailableExposureBalances(state),
       activeExposureReservations: getActiveExposureReservations(state),
       pendingPremium: getPendingPremiumUSDT(state),
       forecast,
       nextSettlement,
       portfolioTotal: getPortfolioTotalValueUSDT(state),
+      storagePortfolioValue: getStoragePortfolioValueUSDT(state),
       holdingEntries: getHoldingEntries(state, { hideDust: true }),
       exposureHoldingEntries: getExposureHoldingEntries(state, { hideDust: true })
     };

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { ForecastMode } from "../../lib/domain/types";
 import { amount, money } from "../../lib/domain/format";
 import { activeOrderPendingPremiumUSDT } from "../../lib/services/portfolio-service";
@@ -9,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { OrderCard } from "../orders/OrderCard";
 import { MetricCard } from "../display/MetricCard";
+import { MetricInfo } from "../display/MetricInfo";
 import { SectionHeading } from "../display/SectionHeading";
 import { ForecastCard } from "./ForecastCard";
 import { MarketPricesCard } from "./MarketPricesCard";
@@ -30,41 +30,59 @@ function exposureLabel(asset: string): string {
 type DashboardCardId =
   | "totalDIValue"
   | "netDeposited"
+  | "externalDeposits"
+  | "externalWithdrawals"
+  | "internalTransfers"
+  | "diWorkingCapital"
   | "pnl"
+  | "storageValue"
+  | "totalPortfolioPnl"
   | "activeOrders"
   | "marketPrices"
   | "currentHolding"
   | "forecast"
   | "portfolioTotal";
 
-const DASHBOARD_LAYOUT_KEY = "di-tracker-dashboard-card-order-v1";
-const defaultDashboardCardOrder: DashboardCardId[] = [
-  "totalDIValue",
-  "netDeposited",
-  "pnl",
-  "activeOrders",
-  "marketPrices",
-  "currentHolding",
-  "forecast",
-  "portfolioTotal"
+type DashboardGroup = {
+  title: string;
+  cards: DashboardCardId[];
+};
+
+const dashboardGroups: DashboardGroup[] = [
+  {
+    title: "DI Engine",
+    cards: ["totalDIValue", "diWorkingCapital", "pnl", "activeOrders"]
+  },
+  {
+    title: "Portfolio",
+    cards: ["portfolioTotal", "storageValue", "totalPortfolioPnl"]
+  },
+  {
+    title: "Capital Flow",
+    cards: ["netDeposited", "externalDeposits", "externalWithdrawals", "internalTransfers"]
+  },
+  {
+    title: "Market & Forecast",
+    cards: ["currentHolding", "marketPrices", "forecast"]
+  }
 ];
 
-function loadDashboardCardOrder(): DashboardCardId[] {
-  if (typeof window === "undefined") return defaultDashboardCardOrder;
-
-  try {
-    const raw = window.localStorage.getItem(DASHBOARD_LAYOUT_KEY);
-    if (!raw) return defaultDashboardCardOrder;
-
-    const parsed = JSON.parse(raw) as DashboardCardId[];
-    const knownCards = new Set(defaultDashboardCardOrder);
-    const savedCards = parsed.filter((id): id is DashboardCardId => knownCards.has(id));
-    const missingCards = defaultDashboardCardOrder.filter((id) => !savedCards.includes(id));
-    return [...savedCards, ...missingCards];
-  } catch {
-    return defaultDashboardCardOrder;
-  }
-}
+const metricDescriptions: Record<DashboardCardId, string> = {
+  totalDIValue: "Current DI engine value: DI free balances plus conservative value locked in active orders.",
+  diWorkingCapital: "Capital currently allocated to the DI engine. Internal transfers out of DI reduce this number.",
+  pnl: "DI engine value minus DI working capital. This excludes storage portfolio performance.",
+  activeOrders: "Number of currently active DI orders.",
+  portfolioTotal: "DI engine value plus storage portfolio value.",
+  storageValue: "Assets held outside DI pockets, such as BTC/ETH/SOL storage balances.",
+  totalPortfolioPnl: "Total portfolio value minus external net deposit.",
+  netDeposited: "External deposits minus external withdrawals. Internal transfers do not change this.",
+  externalDeposits: "Capital added from outside the app.",
+  externalWithdrawals: "Capital removed from the whole portfolio/app.",
+  internalTransfers: "Capital moved between DI engine and storage portfolio.",
+  currentHolding: "Weighted average entry by exposure. SOL and OKSOL are grouped as SOL-equivalent.",
+  marketPrices: "Latest prices used for valuation. OKSOL uses SOL price.",
+  forecast: "Projection based on selected mode. It is a planning estimate, not a guaranteed result."
+};
 
 export function Dashboard({
   metrics,
@@ -74,37 +92,23 @@ export function Dashboard({
   onTargetDailyReturnPercentChange,
   onManageOrders
 }: DashboardProps) {
-  const [cardOrder, setCardOrder] = useState<DashboardCardId[]>(loadDashboardCardOrder);
-  const [draggedCard, setDraggedCard] = useState<DashboardCardId | null>(null);
-
-  useEffect(() => {
-    window.localStorage.setItem(DASHBOARD_LAYOUT_KEY, JSON.stringify(cardOrder));
-  }, [cardOrder]);
-
-  function moveCard(targetCard: DashboardCardId) {
-    if (!draggedCard || draggedCard === targetCard) return;
-    setCardOrder((currentOrder) => {
-      const nextOrder = [...currentOrder];
-      const fromIndex = nextOrder.indexOf(draggedCard);
-      const toIndex = nextOrder.indexOf(targetCard);
-      if (fromIndex < 0 || toIndex < 0) return currentOrder;
-
-      const [movedCard] = nextOrder.splice(fromIndex, 1);
-      nextOrder.splice(toIndex, 0, movedCard);
-      return nextOrder;
-    });
-  }
-
   function renderCard(cardId: DashboardCardId) {
-    if (cardId === "totalDIValue") return <TotalDIValueCard metrics={metrics} />;
-    if (cardId === "netDeposited") return <MetricCard label="Net Deposited Capital" value={money(metrics.netDeposited)} />;
-    if (cardId === "pnl") return <MetricCard label="DI Profit / Loss" value={money(metrics.pnl)} tone={metrics.pnl >= 0 ? "green" : "red"} />;
-    if (cardId === "activeOrders") return <MetricCard label="Active Orders" value={String(metrics.activeOrders.length)} />;
-    if (cardId === "marketPrices") return <MarketPricesCard prices={metrics.prices} />;
+    const description = metricDescriptions[cardId];
+    if (cardId === "totalDIValue") return <TotalDIValueCard metrics={metrics} description={description} />;
+    if (cardId === "diWorkingCapital") return <MetricCard label="DI Working Capital" value={money(metrics.diWorkingCapital)} description={description} />;
+    if (cardId === "netDeposited") return <MetricCard label="External Net Deposit" value={money(metrics.netDeposited)} description={description} />;
+    if (cardId === "externalDeposits") return <MetricCard label="External Deposits" value={money(metrics.externalDeposits)} description={description} />;
+    if (cardId === "externalWithdrawals") return <MetricCard label="External Withdrawals" value={money(metrics.externalWithdrawals)} description={description} />;
+    if (cardId === "internalTransfers") return <MetricCard label="Internal Transfers" value={money(metrics.internalTransfers)} description={description} />;
+    if (cardId === "pnl") return <MetricCard label="DI Engine PnL" value={money(metrics.pnl)} tone={metrics.pnl >= 0 ? "green" : "red"} description={description} />;
+    if (cardId === "storageValue") return <MetricCard label="Storage Portfolio Value" value={money(metrics.storagePortfolioValue)} description={description} />;
+    if (cardId === "totalPortfolioPnl") return <MetricCard label="Total Portfolio PnL" value={money(metrics.totalPortfolioPnl)} tone={metrics.totalPortfolioPnl >= 0 ? "green" : "red"} description={description} />;
+    if (cardId === "activeOrders") return <MetricCard label="Active Orders" value={String(metrics.activeOrders.length)} description={description} />;
+    if (cardId === "marketPrices") return <MarketPricesCard prices={metrics.prices} description={description} />;
     if (cardId === "currentHolding") {
       return (
         <Card className="metric-card holding-entry-card">
-          <span>Exposure Holding Entry</span>
+          <MetricInfo label="Exposure Holding Entry" description={description} />
           {metrics.exposureHoldingEntries.length ? (
             <div className="holding-entry-list">
               {metrics.exposureHoldingEntries.map((entry) => (
@@ -127,6 +131,7 @@ export function Dashboard({
           forecast={metrics.forecast}
           mode={forecastMode}
           targetDailyReturnPercent={targetDailyReturnPercent}
+          description={description}
           onTargetDailyReturnPercentChange={onTargetDailyReturnPercentChange}
           onModeChange={onForecastModeChange}
         />
@@ -137,30 +142,18 @@ export function Dashboard({
 
   return (
     <>
-      <section className="dashboard-grid">
-        {cardOrder.map((cardId) => (
-          <div
-            key={cardId}
-            className={`dashboard-card-slot ${draggedCard === cardId ? "dragging" : ""}`}
-            draggable
-            title="Drag to reorder"
-            onDragStart={(event) => {
-              setDraggedCard(cardId);
-              event.dataTransfer.effectAllowed = "move";
-              event.dataTransfer.setData("text/plain", cardId);
-            }}
-            onDragOver={(event) => {
-              event.preventDefault();
-              event.dataTransfer.dropEffect = "move";
-            }}
-            onDrop={(event) => {
-              event.preventDefault();
-              moveCard(cardId);
-            }}
-            onDragEnd={() => setDraggedCard(null)}
-          >
-            {renderCard(cardId)}
-          </div>
+      <section className="dashboard-sections">
+        {dashboardGroups.map((group) => (
+          <section className="dashboard-section" key={group.title}>
+            <SectionHeading title={group.title} />
+            <div className="dashboard-grid">
+              {group.cards.map((cardId) => (
+                <div key={cardId} className="dashboard-card-slot">
+                  {renderCard(cardId)}
+                </div>
+              ))}
+            </div>
+          </section>
         ))}
       </section>
 

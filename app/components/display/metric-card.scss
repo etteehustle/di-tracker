@@ -15,9 +15,32 @@
   line-height: 1.35;
 }
 
-.metric-card > span {
+.metric-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.metric-heading > span {
   font-family: var(--mono);
   text-transform: uppercase;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.metric-info-button {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  color: var(--muted-foreground);
+}
+
+.metric-info-button:hover,
+.metric-info-button:focus-visible {
+  color: var(--foreground);
 }
 
 .metric-card strong {

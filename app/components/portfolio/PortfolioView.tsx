@@ -50,6 +50,9 @@ export function PortfolioView({ state, metrics, onRecordBuy }: PortfolioViewProp
         <div className="stat-row">
           <MetricCard label="Portfolio Total Value" value={money(metrics.portfolioTotal)} />
           <MetricCard label="DI Value" value={money(metrics.diValue)} />
+          <MetricCard label="Storage Value" value={money(metrics.storagePortfolioValue)} />
+          <MetricCard label="External Net Deposit" value={money(metrics.netDeposited)} />
+          <MetricCard label="Total Portfolio PnL" value={money(metrics.totalPortfolioPnl)} tone={metrics.totalPortfolioPnl >= 0 ? "green" : "red"} />
           <MetricCard label="Pending Premium" value={money(metrics.pendingPremium)} />
         </div>
         <h3>Exposure View</h3>

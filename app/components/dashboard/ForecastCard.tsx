@@ -4,11 +4,13 @@ import type { DashboardMetrics } from "../../lib/view-models";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MetricInfo } from "../display/MetricInfo";
 
 type ForecastCardProps = {
   forecast: DashboardMetrics["forecast"];
   mode: ForecastMode;
   targetDailyReturnPercent: number;
+  description?: string;
   onTargetDailyReturnPercentChange: (value: number) => void;
   onModeChange: (mode: ForecastMode) => void;
 };
@@ -17,12 +19,13 @@ export function ForecastCard({
   forecast,
   mode,
   targetDailyReturnPercent,
+  description,
   onTargetDailyReturnPercentChange,
   onModeChange
 }: ForecastCardProps) {
   return (
     <Card className="metric-card forecast-card">
-      <span>1-Year Forecast</span>
+      <MetricInfo label="1-Year Forecast" description={description} />
       <strong>{money(forecast.projectedOneYearValueUSDT)}</strong>
       <div className="segmented forecast-modes">
         <Button

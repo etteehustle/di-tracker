@@ -6,8 +6,16 @@ import { getLedgerBalances, getLedgerExposureBalances } from "../lib/services/le
 import {
   activeOrderConservativeValueUSDT,
   getCurrentDIValueUSDT,
+  getDIWorkingCapitalUSDT,
   getDIPnlUSDT,
+  getExternalDepositsUSDT,
+  getExternalNetDepositedCapitalUSDT,
+  getExternalWithdrawalsUSDT,
+  getInternalTransfersUSDT,
   getNetDepositedCapitalUSDT,
+  getPortfolioTotalValueUSDT,
+  getStoragePortfolioValueUSDT,
+  getTotalPortfolioPnlUSDT,
   makeForecast
 } from "../lib/services/portfolio-service";
 import { recordPortfolioBuy } from "../lib/services/portfolio-adjustment-service";
@@ -347,6 +355,51 @@ describe("DI accounting services", () => {
     expect(entries.find((entry) => entry.asset === "OKSOL")?.entry).toBeCloseTo(84.1354, 4);
     expect(getNetDepositedCapitalUSDT(withEth)).toBeCloseTo(getNetDepositedCapitalUSDT(state) + 13000, 6);
     expect(withEth.costBasisLots.find((lot) => lot.asset === "BTC")?.pocketId).toBeNull();
+  });
+
+  it("separates external flows, DI working capital, storage value, and total portfolio value", () => {
+    const state = cloneState();
+    const withStorage = recordPortfolioBuy(state, {
+      asset: "BTC",
+      amount: 0.1,
+      costUSDT: 6000,
+      note: "test BTC storage buy"
+    });
+    const withInternalTransfer: AppState = {
+      ...withStorage,
+      capitalMovements: [
+        {
+          id: "movement_di_to_storage",
+          portfolioId: "portfolio_main",
+          type: "WITHDRAW_DI_TO_PORTFOLIO",
+          fromPocketId: "pocket_core_sol",
+          toPocketId: null,
+          asset: "USDT",
+          amount: 1000,
+          valueUSDTAtTime: 1000,
+          movementTime: "2026-05-03T00:00:00.000Z",
+          note: "move profit to storage",
+          createdAt: "2026-05-03T00:00:00.000Z",
+          updatedAt: "2026-05-03T00:00:00.000Z"
+        },
+        ...withStorage.capitalMovements
+      ]
+    };
+
+    expect(getExternalDepositsUSDT(withInternalTransfer)).toBeCloseTo(11361, 6);
+    expect(getExternalWithdrawalsUSDT(withInternalTransfer)).toBe(0);
+    expect(getExternalNetDepositedCapitalUSDT(withInternalTransfer)).toBeCloseTo(11361, 6);
+    expect(getInternalTransfersUSDT(withInternalTransfer)).toBe(1000);
+    expect(getDIWorkingCapitalUSDT(withInternalTransfer)).toBeCloseTo(4361, 6);
+    expect(getStoragePortfolioValueUSDT(withInternalTransfer)).toBeCloseTo(6400, 6);
+    expect(getPortfolioTotalValueUSDT(withInternalTransfer)).toBeCloseTo(
+      getCurrentDIValueUSDT(withInternalTransfer) + 6400,
+      6
+    );
+    expect(getTotalPortfolioPnlUSDT(withInternalTransfer)).toBeCloseTo(
+      getPortfolioTotalValueUSDT(withInternalTransfer) - 11361,
+      6
+    );
   });
 
   it("groups current holding entries by exposure for the main DI view", () => {

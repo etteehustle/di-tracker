@@ -1,7 +1,7 @@
 import { assetPrice, toUSDT } from "../domain/assets";
 import type { AppState, Asset, DIOrder, ForecastMode, ForecastSnapshot, UnderlyingAsset } from "../domain/types";
 import { lockDays } from "../domain/format";
-import { getAvailableBalances, getLatestPrices } from "./ledger-service";
+import { getDIAvailableBalances, getLatestPrices, getStorageBalances } from "./ledger-service";
 import { createId } from "./id";
 
 type ForecastOptions = {
@@ -29,7 +29,7 @@ function subscribedCapitalUSDT(order: DIOrder, prices: Record<UnderlyingAsset, n
 
 export function getCurrentDIValueUSDT(state: AppState): number {
   const prices = getLatestPrices(state);
-  const availableValue = getAvailableBalances(state).reduce((sum, balance) => sum + balance.valueUSDT, 0);
+  const availableValue = getDIAvailableBalances(state).reduce((sum, balance) => sum + balance.valueUSDT, 0);
   const activeValue = state.orders
     .filter((order) => order.status === "ACTIVE" && !order.isDeleted)
     .reduce((sum, order) => sum + activeOrderConservativeValueUSDT(order, prices), 0);
@@ -43,20 +43,62 @@ export function getPendingPremiumUSDT(state: AppState): number {
     .reduce((sum, order) => sum + activeOrderPendingPremiumUSDT(order, prices), 0);
 }
 
-export function getNetDepositedCapitalUSDT(state: AppState): number {
+function movementValueUSDT(movement: AppState["capitalMovements"][number]): number {
+  return movement.valueUSDTAtTime ?? movement.amount;
+}
+
+export function getExternalDepositsUSDT(state: AppState): number {
   return state.capitalMovements.reduce((sum, movement) => {
-    if (movement.type === "DEPOSIT") return sum + movement.amount;
-    if (movement.type === "WITHDRAW_DI_TO_PORTFOLIO" || movement.type === "WITHDRAW_PORTFOLIO_EXTERNAL") return sum - movement.amount;
+    if (movement.type === "DEPOSIT") return sum + movementValueUSDT(movement);
     return sum;
   }, 0);
 }
 
+export function getExternalWithdrawalsUSDT(state: AppState): number {
+  return state.capitalMovements.reduce((sum, movement) => {
+    if (movement.type === "WITHDRAW_PORTFOLIO_EXTERNAL") return sum + movementValueUSDT(movement);
+    return sum;
+  }, 0);
+}
+
+export function getExternalNetDepositedCapitalUSDT(state: AppState): number {
+  return getExternalDepositsUSDT(state) - getExternalWithdrawalsUSDT(state);
+}
+
+export function getInternalTransfersUSDT(state: AppState): number {
+  return state.capitalMovements.reduce((sum, movement) => {
+    if (movement.type === "WITHDRAW_DI_TO_PORTFOLIO" || movement.type === "INTERNAL_TRANSFER") return sum + movementValueUSDT(movement);
+    return sum;
+  }, 0);
+}
+
+export function getDIWorkingCapitalUSDT(state: AppState): number {
+  return state.capitalMovements.reduce((sum, movement) => {
+    if (movement.type === "DEPOSIT" && movement.toPocketId) return sum + movementValueUSDT(movement);
+    if (movement.type === "INTERNAL_TRANSFER" && movement.toPocketId) return sum + movementValueUSDT(movement);
+    if (movement.type === "WITHDRAW_DI_TO_PORTFOLIO") return sum - movementValueUSDT(movement);
+    return sum;
+  }, 0);
+}
+
+export function getNetDepositedCapitalUSDT(state: AppState): number {
+  return getExternalNetDepositedCapitalUSDT(state);
+}
+
 export function getDIPnlUSDT(state: AppState): number {
-  return getCurrentDIValueUSDT(state) - getNetDepositedCapitalUSDT(state);
+  return getCurrentDIValueUSDT(state) - getDIWorkingCapitalUSDT(state);
+}
+
+export function getStoragePortfolioValueUSDT(state: AppState): number {
+  return getStorageBalances(state).reduce((sum, balance) => sum + balance.valueUSDT, 0);
 }
 
 export function getPortfolioTotalValueUSDT(state: AppState): number {
-  return getCurrentDIValueUSDT(state);
+  return getCurrentDIValueUSDT(state) + getStoragePortfolioValueUSDT(state);
+}
+
+export function getTotalPortfolioPnlUSDT(state: AppState): number {
+  return getPortfolioTotalValueUSDT(state) - getExternalNetDepositedCapitalUSDT(state);
 }
 
 export function getSettledYieldUSDT(order: DIOrder, prices: Record<UnderlyingAsset, number>): number {
