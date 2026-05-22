@@ -1,7 +1,8 @@
 import { useState, type FormEvent } from "react";
-import { amount, money } from "../../lib/domain/format";
-import type { AppState } from "../../lib/domain/types";
+import { amount, dateTime, money } from "../../lib/domain/format";
+import type { AppState, Asset } from "../../lib/domain/types";
 import { getAvailableBalances } from "../../lib/services/ledger-service";
+import type { CapitalAdjustmentInput } from "../../lib/services/portfolio-adjustment-service";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,18 +19,28 @@ import { Field, FieldLabel } from "@/components/ui/field";
 import { FormattedNumberInput } from "../inputs/FormattedNumberInput";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 type PocketsViewProps = {
   state: AppState;
   onDeposit: (pocketId: string, amount: number, note: string) => void;
+  onAdjustment: (input: CapitalAdjustmentInput) => void;
   onMerge: (sourcePocketId: string, targetPocketId: string, note: string) => void;
 };
 
-export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
+const adjustmentAssets: Asset[] = ["USDT", "BTC", "ETH", "SOL", "OKSOL"];
+
+export function PocketsView({ state, onDeposit, onAdjustment, onMerge }: PocketsViewProps) {
   const activePockets = state.pockets.filter((pocket) => pocket.status === "ACTIVE");
   const [depositAmount, setDepositAmount] = useState(500);
   const [depositPocketId, setDepositPocketId] = useState(activePockets[0]?.id ?? "");
   const [depositNote, setDepositNote] = useState("New DI capital");
+  const [adjustmentPocketId, setAdjustmentPocketId] = useState(activePockets[0]?.id ?? "");
+  const [adjustmentAsset, setAdjustmentAsset] = useState<Asset>("OKSOL");
+  const [adjustmentDirection, setAdjustmentDirection] = useState<"ADD" | "SUBTRACT">("ADD");
+  const [adjustmentAmount, setAdjustmentAmount] = useState(0.01);
+  const [adjustmentValueUSDTAtTime, setAdjustmentValueUSDTAtTime] = useState(0.84);
+  const [adjustmentNote, setAdjustmentNote] = useState("Existing OKX OKSOL dust before transfer");
   const [mergeOpen, setMergeOpen] = useState(false);
   const [mergeSourceId, setMergeSourceId] = useState("pocket_extra");
   const [mergeTargetId, setMergeTargetId] = useState("pocket_core_sol");
@@ -38,6 +49,18 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
   function submitDeposit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     onDeposit(depositPocketId, depositAmount, depositNote);
+  }
+
+  function submitAdjustment(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const signedAmount = adjustmentDirection === "ADD" ? adjustmentAmount : -adjustmentAmount;
+    onAdjustment({
+      pocketId: adjustmentPocketId,
+      asset: adjustmentAsset,
+      amount: signedAmount,
+      valueUSDTAtTime: adjustmentAsset === "USDT" ? undefined : adjustmentValueUSDTAtTime,
+      note: adjustmentNote
+    });
   }
 
   function submitMerge(event: FormEvent<HTMLFormElement>) {
@@ -54,7 +77,10 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
           const balances = getAvailableBalances(state, pocket.id);
           return (
             <Card className="card" key={pocket.id}>
-              <Badge variant="secondary" className={pocket.status.toLowerCase()}>{pocket.status}</Badge>
+              <div className="pocket-card-header">
+                <Badge variant="secondary" className={pocket.status.toLowerCase()}>{pocket.status}</Badge>
+                <small>{pocket.id}</small>
+              </div>
               <h3>{pocket.name}</h3>
               <p>{pocket.note}</p>
               <div className="mini-list">
@@ -71,6 +97,7 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
 
       <Card className="panel">
         <h2>Capital & Merge</h2>
+        <p className="panel-note">Deposits add external DI capital. Merges are internal transfers and should not create PnL.</p>
         <form className="form-grid" onSubmit={submitDeposit}>
           <label>
             Deposit pocket
@@ -102,6 +129,81 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
 
           <Button className="wide" type="submit">Create deposit</Button>
         </form>
+
+        <h3>Balance Adjustment</h3>
+        <p className="panel-note">Adjustments reconcile dust and rounding. They change balances without changing external net deposit.</p>
+        <form className="form-grid" onSubmit={submitAdjustment}>
+          <label>
+            Pocket
+            <Select value={adjustmentPocketId} onValueChange={setAdjustmentPocketId}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {activePockets.map((pocket) => (
+                    <SelectItem key={pocket.id} value={pocket.id}>
+                      {pocket.name}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </label>
+
+          <label>
+            Asset
+            <Select value={adjustmentAsset} onValueChange={(nextValue) => setAdjustmentAsset(nextValue as Asset)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  {adjustmentAssets.map((asset) => (
+                    <SelectItem key={asset} value={asset}>
+                      {asset}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </label>
+
+          <label>
+            Direction
+            <Select value={adjustmentDirection} onValueChange={(nextValue) => setAdjustmentDirection(nextValue as "ADD" | "SUBTRACT")}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="ADD">Add</SelectItem>
+                  <SelectItem value="SUBTRACT">Subtract</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </label>
+
+          <label>
+            Amount
+            <FormattedNumberInput value={adjustmentAmount} onChange={setAdjustmentAmount} />
+          </label>
+
+          {adjustmentAsset !== "USDT" && (
+            <label className="wide">
+              USDT value at time
+              <FormattedNumberInput value={adjustmentValueUSDTAtTime} onChange={setAdjustmentValueUSDTAtTime} />
+            </label>
+          )}
+
+          <label className="wide">
+            Note
+            <Input required value={adjustmentNote} onChange={(event) => setAdjustmentNote(event.target.value)} />
+          </label>
+
+          <Button className="wide" type="submit">Record adjustment</Button>
+        </form>
+
         <Dialog open={mergeOpen} onOpenChange={setMergeOpen}>
           <DialogTrigger asChild>
             <Button variant="secondary">Merge pockets by id</Button>
@@ -115,12 +217,38 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
             </DialogHeader>
             <form className="form-grid" onSubmit={submitMerge}>
               <Field>
-                <FieldLabel htmlFor="merge-source">Source pocket id</FieldLabel>
-                <Input id="merge-source" required value={mergeSourceId} onChange={(event) => setMergeSourceId(event.target.value)} />
+                <FieldLabel htmlFor="merge-source">Source pocket</FieldLabel>
+                <Select value={mergeSourceId} onValueChange={setMergeSourceId}>
+                  <SelectTrigger id="merge-source">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {state.pockets.map((pocket) => (
+                        <SelectItem key={pocket.id} value={pocket.id}>
+                          {pocket.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
               <Field>
-                <FieldLabel htmlFor="merge-target">Target pocket id</FieldLabel>
-                <Input id="merge-target" required value={mergeTargetId} onChange={(event) => setMergeTargetId(event.target.value)} />
+                <FieldLabel htmlFor="merge-target">Target pocket</FieldLabel>
+                <Select value={mergeTargetId} onValueChange={setMergeTargetId}>
+                  <SelectTrigger id="merge-target">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {activePockets.map((pocket) => (
+                        <SelectItem key={pocket.id} value={pocket.id}>
+                          {pocket.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
               <Field className="wide">
                 <FieldLabel htmlFor="merge-note">Merge note</FieldLabel>
@@ -134,6 +262,38 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
           </DialogContent>
         </Dialog>
       </Card>
+
+      <section className="panel movement-history-panel">
+        <h2>Capital Movement History</h2>
+        <div className="table-wrap">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Type</TableHead>
+                <TableHead>Asset</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>USDT value</TableHead>
+                <TableHead>Pocket</TableHead>
+                <TableHead>Time</TableHead>
+                <TableHead>Note</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {state.capitalMovements.map((movement) => (
+                <TableRow key={movement.id}>
+                  <TableCell>{movement.type}</TableCell>
+                  <TableCell>{movement.asset}</TableCell>
+                  <TableCell>{amount(movement.amount)} {movement.asset}</TableCell>
+                  <TableCell>{money(movement.valueUSDTAtTime ?? movement.amount)}</TableCell>
+                  <TableCell>{movement.toPocketId ?? movement.fromPocketId ?? "Portfolio"}</TableCell>
+                  <TableCell>{dateTime(movement.movementTime)}</TableCell>
+                  <TableCell>{movement.note}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </section>
     </div>
   );
 }

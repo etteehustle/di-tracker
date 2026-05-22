@@ -1,3 +1,7 @@
+.audit-panel {
+  width: 100%;
+}
+
 .audit-list {
   display: grid;
   gap: 10px;
@@ -5,17 +9,19 @@
 }
 
 .audit-list .audit-entry {
-  padding: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  box-shadow: var(--surface-glow), var(--shadow-soft);
 }
 
 .audit-list strong {
   font-family: var(--mono);
-  color: var(--ink);
+  color: var(--ring);
 }
 
 .audit-list span {
   display: block;
-  color: #5eead4;
+  color: var(--muted);
   font-family: var(--mono);
   font-size: 12px;
   margin-top: 4px;

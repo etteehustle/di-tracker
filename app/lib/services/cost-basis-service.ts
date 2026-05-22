@@ -1,7 +1,15 @@
 import { normalizeAsset } from "../domain/assets";
-import type { AppState, Asset, CostBasisLot, CostBasisStatus } from "../domain/types";
+import type { AppState, Asset, CostBasisLot, CostBasisStatus, UnderlyingAsset } from "../domain/types";
 
 const DUST_ECONOMIC_COST_USDT = 5;
+
+type HoldingEntryOptions = {
+  hideDust?: boolean;
+};
+
+function shouldIncludeHoldingEntry(economicCostUSDT: number, options: HoldingEntryOptions): boolean {
+  return !options.hideDust || economicCostUSDT > DUST_ECONOMIC_COST_USDT;
+}
 
 export function weightedAverageEntry(lots: CostBasisLot[], asset: Asset): number | null {
   const underlyingAsset = normalizeAsset(asset);
@@ -12,7 +20,10 @@ export function weightedAverageEntry(lots: CostBasisLot[], asset: Asset): number
   return totalCost / totalAmount;
 }
 
-export function getHoldingEntries(state: AppState): Array<{ asset: Asset; entry: number; amount: number; economicCostUSDT: number }> {
+export function getHoldingEntries(
+  state: AppState,
+  options: HoldingEntryOptions = {}
+): Array<{ asset: Asset; entry: number; amount: number; economicCostUSDT: number }> {
   const grouped = new Map<string, { asset: Asset; amount: number; economicCostUSDT: number }>();
 
   for (const lot of state.costBasisLots.filter((item) => item.status === "OPEN" && item.amount > 1e-9)) {
@@ -24,7 +35,32 @@ export function getHoldingEntries(state: AppState): Array<{ asset: Asset; entry:
   }
 
   return Array.from(grouped.values())
-    .filter((item) => item.economicCostUSDT > DUST_ECONOMIC_COST_USDT)
+    .filter((item) => shouldIncludeHoldingEntry(item.economicCostUSDT, options))
+    .map((item) => ({
+      ...item,
+      entry: item.economicCostUSDT / item.amount
+    }));
+}
+
+export function getExposureHoldingEntries(
+  state: AppState,
+  options: HoldingEntryOptions = {}
+): Array<{ underlyingAsset: UnderlyingAsset; entry: number; amount: number; economicCostUSDT: number }> {
+  const grouped = new Map<UnderlyingAsset, { underlyingAsset: UnderlyingAsset; amount: number; economicCostUSDT: number }>();
+
+  for (const lot of state.costBasisLots.filter((item) => item.status === "OPEN" && item.amount > 1e-9)) {
+    const current = grouped.get(lot.underlyingAsset) ?? {
+      underlyingAsset: lot.underlyingAsset,
+      amount: 0,
+      economicCostUSDT: 0
+    };
+    current.amount += lot.amount;
+    current.economicCostUSDT += lot.economicCostUSDT;
+    grouped.set(lot.underlyingAsset, current);
+  }
+
+  return Array.from(grouped.values())
+    .filter((item) => shouldIncludeHoldingEntry(item.economicCostUSDT, options))
     .map((item) => ({
       ...item,
       entry: item.economicCostUSDT / item.amount

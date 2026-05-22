@@ -1,33 +1,39 @@
 import { amount, money } from "../../lib/domain/format";
 import type { DashboardMetrics } from "../../lib/view-models";
 import { Card } from "@/components/ui/card";
+import { MetricInfo } from "../display/MetricInfo";
 
 type TotalDIValueCardProps = {
   metrics: DashboardMetrics;
+  description?: string;
 };
 
-export function TotalDIValueCard({ metrics }: TotalDIValueCardProps) {
+function exposureLabel(asset: string): string {
+  return asset === "USDT" ? "USDT" : `${asset}-equivalent`;
+}
+
+export function TotalDIValueCard({ metrics, description }: TotalDIValueCardProps) {
   return (
-    <Card className="metric-card total-value-card blue">
-      <span>Total DI Value</span>
+    <Card className="metric-card total-value-card hero-metric blue">
+      <MetricInfo label="Total DI Value" description={description} />
       <strong>{money(metrics.diValue)}</strong>
       <div className="asset-breakdown">
-        <b>Available balance</b>
-        {metrics.availableBalances.length ? (
-          metrics.availableBalances.map((balance) => (
-            <span key={`available-${balance.asset}-${balance.amount}`}>
-              {balance.asset}: {amount(balance.amount)} {balance.asset} = {money(balance.valueUSDT)}
+        <b>Available exposure</b>
+        {metrics.availableExposureBalances.length ? (
+          metrics.availableExposureBalances.map((balance) => (
+            <span key={`available-${balance.underlyingAsset}-${balance.amount}`}>
+              {balance.underlyingAsset}: {amount(balance.amount)} {exposureLabel(balance.underlyingAsset)} = {money(balance.valueUSDT)}
             </span>
           ))
         ) : (
-          <span>No free balance</span>
+          <span>No free exposure</span>
         )}
 
-        <b>Locked in active orders</b>
-        {metrics.activeReservations.length ? (
-          metrics.activeReservations.map((balance) => (
-            <span key={`locked-${balance.asset}-${balance.amount}`}>
-              {balance.asset}: {amount(balance.amount)} {balance.asset} = {money(balance.valueUSDT)}
+        <b>Locked exposure in active orders</b>
+        {metrics.activeExposureReservations.length ? (
+          metrics.activeExposureReservations.map((balance) => (
+            <span key={`locked-${balance.underlyingAsset}-${balance.amount}`}>
+              {balance.underlyingAsset}: {amount(balance.amount)} {exposureLabel(balance.underlyingAsset)} = {money(balance.valueUSDT)}
             </span>
           ))
         ) : (

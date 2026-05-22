@@ -9,6 +9,7 @@ export type SettlementResult = "HIT" | "NOT_HIT";
 export type PocketStatus = "ACTIVE" | "MERGED" | "ARCHIVED";
 export type MovementType =
   | "DEPOSIT"
+  | "ADJUSTMENT"
   | "WITHDRAW_DI_TO_PORTFOLIO"
   | "WITHDRAW_PORTFOLIO_EXTERNAL"
   | "INTERNAL_TRANSFER"
@@ -29,7 +30,7 @@ export type MarketContextTag =
 export type Score = "EXCELLENT" | "GOOD" | "NEUTRAL" | "BAD" | "DANGEROUS";
 export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
 export type EfficiencyLabel = "WEAK" | "ACCEPTABLE" | "STRONG";
-export type ForecastMode = "SETTLED_AVERAGE" | "BLENDED";
+export type ForecastMode = "SETTLED_ONLY" | "SETTLED_PLUS_ACTIVE_PREMIUM" | "RECENT_TARGET_RATE";
 export type Confidence = "LOW" | "MEDIUM" | "HIGH";
 
 export type User = {
@@ -75,6 +76,7 @@ export type DIOrder = {
   termRatePercent: number;
   startTime: string;
   settlementTime: string;
+  subscribedCapitalValueAtStartUSDT?: number;
   expectedPremiumAmount: number;
   expectedPremiumAsset: Asset;
   ifHitAsset: Asset;
@@ -87,6 +89,11 @@ export type DIOrder = {
   receivedAsset?: Asset | null;
   receivedAmount?: number | null;
   settledAt?: string | null;
+  settlementPriceUSDT?: number;
+  premiumValueAtSettlementUSDT?: number;
+  premiumYieldUSDT?: number;
+  basisReductionUSDT?: number;
+  tradingPnlUSDT?: number;
   realizedYieldUSDT?: number;
   realizedPnlUSDT?: number;
   note?: string;
@@ -168,9 +175,15 @@ export type ForecastSnapshot = {
   currentDIValueUSDT: number;
   dailyReturnRate: number;
   projectedOneYearValueUSDT: number;
+  simpleOneYearValueUSDT: number;
   confidence: Confidence;
+  confidenceNotes: string[];
+  warning: string;
   settledOrderCount: number;
   activeOrderCount: number;
+  sampleDays: number;
+  activeDeploymentRatio: number;
+  returnStdDev?: number;
   createdAt: string;
 };
 
@@ -186,6 +199,7 @@ export type AuditLog = {
     | "DELETE_ORDER"
     | "SETTLE_ORDER"
     | "CREATE_DEPOSIT"
+    | "CREATE_ADJUSTMENT"
     | "CREATE_WITHDRAWAL"
     | "MANUAL_ADJUSTMENT"
     | "MERGE_POCKET"
@@ -210,6 +224,12 @@ export type AppState = {
 
 export type AssetBalance = {
   asset: Asset;
+  underlyingAsset: UnderlyingAsset;
+  amount: number;
+  valueUSDT: number;
+};
+
+export type ExposureBalance = {
   underlyingAsset: UnderlyingAsset;
   amount: number;
   valueUSDT: number;

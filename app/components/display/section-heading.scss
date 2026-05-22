@@ -6,8 +6,15 @@
   margin-bottom: 12px;
 }
 
+.section-heading h2 {
+  font-size: 19px;
+  line-height: 1.2;
+}
+
 .section-heading span {
   color: var(--muted);
   font-size: 12px;
   line-height: 1.35;
+  max-width: 46ch;
+  text-align: right;
 }

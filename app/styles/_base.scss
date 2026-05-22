@@ -10,26 +10,45 @@ body {
   color: var(--ink);
   font-family: var(--sans);
   letter-spacing: 0;
+  scroll-behavior: smooth;
 }
 
 body {
   overflow-x: hidden;
+  background:
+    linear-gradient(rgba(39, 48, 58, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(39, 48, 58, 0.1) 1px, transparent 1px),
+    var(--background);
+  background-size: 48px 48px, 48px 48px, auto;
+  font-feature-settings: "tnum";
 }
 
 button,
 input,
-select {
+select,
+textarea {
   font: inherit;
 }
 
 button {
   border: 0;
   cursor: pointer;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+button:active {
+  transform: translateY(1px);
 }
 
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+textarea:focus-visible,
 summary:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
@@ -39,13 +58,13 @@ h2,
 h3 {
   margin: 0;
   color: var(--ink);
-  font-family: var(--mono);
+  font-family: var(--sans);
+  font-weight: 650;
   letter-spacing: 0;
 }
 
 h2 {
   font-size: 18px;
-  text-transform: uppercase;
 }
 
 h3 {
@@ -59,10 +78,9 @@ small {
 }
 
 .loading {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: grid;
   place-items: center;
-  color: var(--orange-2);
+  color: var(--ring);
   font-family: var(--mono);
-  text-transform: uppercase;
 }

@@ -1,8 +1,9 @@
 import { normalizeAsset, toUSDT } from "../domain/assets";
-import type { AppState, Asset, AssetBalance, LedgerEntry, UnderlyingAsset } from "../domain/types";
+import type { AppState, Asset, AssetBalance, ExposureBalance, LedgerEntry, UnderlyingAsset } from "../domain/types";
 
 export type BalanceScope = {
   pocketId?: string;
+  allocation?: "ALL" | "DI_ENGINE" | "STORAGE";
   includeDeleted?: boolean;
 };
 
@@ -25,11 +26,13 @@ export function getLedgerBalances(state: AppState, scope: BalanceScope = {}): As
 
   const relevantEntries = state.ledgerEntries.filter((entry) => {
     if (scope.pocketId && entry.pocketId !== scope.pocketId) return false;
+    if (!scope.pocketId && scope.allocation === "DI_ENGINE" && !entry.pocketId) return false;
+    if (!scope.pocketId && scope.allocation === "STORAGE" && entry.pocketId) return false;
     return true;
   });
 
   for (const entry of relevantEntries) {
-    const key = `${entry.pocketId ?? "portfolio"}:${entry.asset}`;
+    const key = scope.pocketId ? `${entry.pocketId ?? "portfolio"}:${entry.asset}` : entry.asset;
     const current = totals.get(key) ?? {
       asset: entry.asset,
       underlyingAsset: entry.underlyingAsset,
@@ -65,6 +68,30 @@ export function getActiveReservations(state: AppState, pocketId?: string): Asset
   }));
 }
 
+export function toExposureBalances(balances: AssetBalance[], prices: Record<UnderlyingAsset, number>): ExposureBalance[] {
+  const totals = new Map<UnderlyingAsset, number>();
+
+  for (const balance of balances) {
+    totals.set(balance.underlyingAsset, (totals.get(balance.underlyingAsset) ?? 0) + balance.amount);
+  }
+
+  return Array.from(totals.entries())
+    .filter(([, amount]) => Math.abs(amount) > 1e-9)
+    .map(([underlyingAsset, amount]) => ({
+      underlyingAsset,
+      amount,
+      valueUSDT: toUSDT(amount, underlyingAsset, prices)
+    }));
+}
+
+export function getLedgerExposureBalances(state: AppState, scope: BalanceScope = {}): ExposureBalance[] {
+  return toExposureBalances(getLedgerBalances(state, scope), getLatestPrices(state));
+}
+
+export function getActiveExposureReservations(state: AppState, pocketId?: string): ExposureBalance[] {
+  return toExposureBalances(getActiveReservations(state, pocketId), getLatestPrices(state));
+}
+
 export function getAvailableBalances(state: AppState, pocketId?: string): AssetBalance[] {
   const prices = getLatestPrices(state);
   const available = new Map<Asset, number>();
@@ -84,6 +111,43 @@ export function getAvailableBalances(state: AppState, pocketId?: string): AssetB
       amount: balance,
       valueUSDT: toUSDT(balance, asset, prices)
     }));
+}
+
+export function getAvailableExposureBalances(state: AppState, pocketId?: string): ExposureBalance[] {
+  return toExposureBalances(getAvailableBalances(state, pocketId), getLatestPrices(state));
+}
+
+export function getDIAvailableBalances(state: AppState): AssetBalance[] {
+  const prices = getLatestPrices(state);
+  const available = new Map<Asset, number>();
+
+  for (const balance of getLedgerBalances(state, { allocation: "DI_ENGINE" })) {
+    available.set(balance.asset, (available.get(balance.asset) ?? 0) + balance.amount);
+  }
+  for (const reservation of getActiveReservations(state)) {
+    available.set(reservation.asset, (available.get(reservation.asset) ?? 0) - reservation.amount);
+  }
+
+  return Array.from(available.entries())
+    .filter(([, balance]) => Math.abs(balance) > 1e-9)
+    .map(([asset, balance]) => ({
+      asset,
+      underlyingAsset: normalizeAsset(asset),
+      amount: balance,
+      valueUSDT: toUSDT(balance, asset, prices)
+    }));
+}
+
+export function getDIAvailableExposureBalances(state: AppState): ExposureBalance[] {
+  return toExposureBalances(getDIAvailableBalances(state), getLatestPrices(state));
+}
+
+export function getStorageBalances(state: AppState): AssetBalance[] {
+  return getLedgerBalances(state, { allocation: "STORAGE" });
+}
+
+export function getStorageExposureBalances(state: AppState): ExposureBalance[] {
+  return getLedgerExposureBalances(state, { allocation: "STORAGE" });
 }
 
 export function makeLedgerEntry(entry: Omit<LedgerEntry, "underlyingAsset" | "createdAt">): LedgerEntry {

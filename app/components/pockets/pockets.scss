@@ -8,6 +8,15 @@
   padding: 14px;
   display: grid;
   gap: 10px;
+  border: 1px solid var(--border);
+  box-shadow: var(--surface-glow), var(--shadow-soft);
+}
+
+.pocket-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .card p {
@@ -21,4 +30,22 @@
   color: var(--muted);
   font-family: var(--mono);
   font-size: 13px;
+}
+
+.mini-list span {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-tight);
+  background: var(--muted-bg);
+  padding: 8px;
+}
+
+.panel-note {
+  margin: 8px 0 14px;
+  max-width: 52ch;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.movement-history-panel {
+  grid-column: 1 / -1;
 }
