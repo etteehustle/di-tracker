@@ -8,7 +8,7 @@ type AuditViewProps = {
 
 export function AuditView({ state }: AuditViewProps) {
   return (
-    <section className="panel">
+    <section className="panel audit-panel">
       <h2>Audit Log</h2>
       <div className="audit-list">
         {state.auditLogs.map((log) => (

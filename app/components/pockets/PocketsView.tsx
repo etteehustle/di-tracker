@@ -54,7 +54,10 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
           const balances = getAvailableBalances(state, pocket.id);
           return (
             <Card className="card" key={pocket.id}>
-              <Badge variant="secondary" className={pocket.status.toLowerCase()}>{pocket.status}</Badge>
+              <div className="pocket-card-header">
+                <Badge variant="secondary" className={pocket.status.toLowerCase()}>{pocket.status}</Badge>
+                <small>{pocket.id}</small>
+              </div>
               <h3>{pocket.name}</h3>
               <p>{pocket.note}</p>
               <div className="mini-list">
@@ -71,6 +74,7 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
 
       <Card className="panel">
         <h2>Capital & Merge</h2>
+        <p className="panel-note">Deposits add external DI capital. Merges are internal transfers and should not create PnL.</p>
         <form className="form-grid" onSubmit={submitDeposit}>
           <label>
             Deposit pocket
@@ -115,12 +119,38 @@ export function PocketsView({ state, onDeposit, onMerge }: PocketsViewProps) {
             </DialogHeader>
             <form className="form-grid" onSubmit={submitMerge}>
               <Field>
-                <FieldLabel htmlFor="merge-source">Source pocket id</FieldLabel>
-                <Input id="merge-source" required value={mergeSourceId} onChange={(event) => setMergeSourceId(event.target.value)} />
+                <FieldLabel htmlFor="merge-source">Source pocket</FieldLabel>
+                <Select value={mergeSourceId} onValueChange={setMergeSourceId}>
+                  <SelectTrigger id="merge-source">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {state.pockets.map((pocket) => (
+                        <SelectItem key={pocket.id} value={pocket.id}>
+                          {pocket.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
               <Field>
-                <FieldLabel htmlFor="merge-target">Target pocket id</FieldLabel>
-                <Input id="merge-target" required value={mergeTargetId} onChange={(event) => setMergeTargetId(event.target.value)} />
+                <FieldLabel htmlFor="merge-target">Target pocket</FieldLabel>
+                <Select value={mergeTargetId} onValueChange={setMergeTargetId}>
+                  <SelectTrigger id="merge-target">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {activePockets.map((pocket) => (
+                        <SelectItem key={pocket.id} value={pocket.id}>
+                          {pocket.name}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
               <Field className="wide">
                 <FieldLabel htmlFor="merge-note">Merge note</FieldLabel>

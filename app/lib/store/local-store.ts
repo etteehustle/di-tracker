@@ -6,7 +6,7 @@ import { seedState } from "./mock-data";
 
 const now = "2026-05-03T00:00:00.000Z";
 
-const emptyState: AppState = {
+export const emptyState: AppState = {
   user: {
     id: "user_main",
     name: "Personal DI Operator",
@@ -55,7 +55,32 @@ const emptyState: AppState = {
   auditLogs: []
 };
 
-function getInitialState(): AppState {
+export function createInitialStateForUser(userId = "user_main", email?: string | null): AppState {
+  const portfolioId = `portfolio_${userId}`;
+  return {
+    ...emptyState,
+    user: {
+      ...emptyState.user,
+      id: userId,
+      name: email ?? emptyState.user.name
+    },
+    portfolio: {
+      ...emptyState.portfolio,
+      id: portfolioId,
+      userId
+    },
+    pockets: emptyState.pockets.map((pocket) => ({ ...pocket, portfolioId })),
+    capitalMovements: [],
+    ledgerEntries: [],
+    costBasisLots: [],
+    orders: [],
+    priceSnapshots: [],
+    orderEvaluations: [],
+    auditLogs: []
+  };
+}
+
+export function getInitialState(): AppState {
   return environment.mock.enabled ? seedState : emptyState;
 }
 

@@ -6,6 +6,7 @@ import { getLedgerBalances, getLedgerExposureBalances } from "../lib/services/le
 import {
   activeOrderConservativeValueUSDT,
   getCurrentDIValueUSDT,
+  getDIPnlBreakdownUSDT,
   getDIWorkingCapitalUSDT,
   getDIPnlUSDT,
   getExternalDepositsUSDT,
@@ -425,6 +426,29 @@ describe("DI accounting services", () => {
     const before = getDIPnlUSDT(state);
     const next = mergePockets(state, "pocket_extra", "pocket_core_sol", "test merge");
     expect(getDIPnlUSDT(next)).toBeCloseTo(before, 6);
+  });
+
+  it("breaks DI PnL into premium, trading, realized, and unrealized parts", () => {
+    const state = cloneState();
+    const settled = settleOrder(state, {
+      orderId: "order_sell_high_seed",
+      result: "HIT",
+      receivedAsset: "USDT",
+      receivedAmount: 5517.26997458,
+      settledAt: "2026-05-02T08:00:00.000Z",
+      note: "test sell high hit"
+    });
+
+    const breakdown = getDIPnlBreakdownUSDT(settled);
+
+    expect(breakdown.premiumYieldUSDT).toBeCloseTo(55.09119069 + (5517.26997458 - 63.7 * 86), 6);
+    expect(breakdown.tradingPnlUSDT).toBeCloseTo(63.7 * 86 - 63.7 * 84.1354, 2);
+    expect(breakdown.realizedPnlUSDT).toBeCloseTo(5517.26997458 - 63.7 * 84.1354, 2);
+    expect(breakdown.unrealizedPnlUSDT).toBeCloseTo(0.01871989 * (84.4 - 84.1354), 6);
+    expect(breakdown.totalDIPnlUSDT).toBeCloseTo(
+      breakdown.realizedPnlUSDT + breakdown.unrealizedPnlUSDT,
+      6
+    );
   });
 
   it("projects settled-only and active-premium forecasts from current DI value", () => {

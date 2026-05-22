@@ -5,11 +5,18 @@
   margin-top: 14px;
 }
 
+.portfolio-overview,
+.portfolio-action-panel {
+  display: grid;
+  gap: 16px;
+}
+
 .table-wrap {
   overflow-x: auto;
   margin-top: 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  box-shadow: var(--surface-glow);
 }
 
 .table-wrap table {
@@ -41,4 +48,12 @@
 
 .table-wrap tr:last-child td {
   border-bottom: 0;
+}
+
+.table-wrap tbody tr {
+  transition: background-color 160ms ease;
+}
+
+.table-wrap tbody tr:hover {
+  background: rgba(18, 58, 56, 0.22);
 }

@@ -8,6 +8,14 @@ type ForecastOptions = {
   targetDailyReturnRate?: number;
 };
 
+export type DIPnlBreakdown = {
+  premiumYieldUSDT: number;
+  tradingPnlUSDT: number;
+  realizedPnlUSDT: number;
+  unrealizedPnlUSDT: number;
+  totalDIPnlUSDT: number;
+};
+
 const FORECAST_WARNING =
   "Assumes continuous redeployment and stable yield. It does not account for stuck periods, poor package availability, large drawdowns, or manual pauses.";
 
@@ -87,6 +95,29 @@ export function getNetDepositedCapitalUSDT(state: AppState): number {
 
 export function getDIPnlUSDT(state: AppState): number {
   return getCurrentDIValueUSDT(state) - getDIWorkingCapitalUSDT(state);
+}
+
+export function getDIPnlBreakdownUSDT(state: AppState): DIPnlBreakdown {
+  const prices = getLatestPrices(state);
+  const settledOrders = state.orders.filter((order) => order.status.startsWith("SETTLED") && !order.isDeleted);
+
+  const premiumYieldUSDT = settledOrders.reduce((sum, order) => sum + (order.premiumYieldUSDT ?? 0), 0);
+  const tradingPnlUSDT = settledOrders.reduce((sum, order) => sum + (order.tradingPnlUSDT ?? 0), 0);
+  const realizedPnlUSDT = settledOrders.reduce((sum, order) => sum + (order.realizedPnlUSDT ?? 0), 0);
+  const unrealizedPnlUSDT = state.costBasisLots
+    .filter((lot) => lot.pocketId && lot.status === "OPEN" && lot.amount > 1e-9)
+    .reduce((sum, lot) => {
+      const currentPrice = assetPrice(lot.underlyingAsset, prices);
+      return sum + lot.amount * currentPrice - lot.economicCostUSDT;
+    }, 0);
+
+  return {
+    premiumYieldUSDT,
+    tradingPnlUSDT,
+    realizedPnlUSDT,
+    unrealizedPnlUSDT,
+    totalDIPnlUSDT: realizedPnlUSDT + unrealizedPnlUSDT
+  };
 }
 
 export function getStoragePortfolioValueUSDT(state: AppState): number {

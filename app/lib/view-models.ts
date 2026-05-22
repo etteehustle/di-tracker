@@ -1,4 +1,5 @@
 import type { Asset, AssetBalance, DIOrder, ExposureBalance, ForecastMode, ForecastSnapshot, UnderlyingAsset } from "./domain/types";
+import type { DIPnlBreakdown } from "./services/portfolio-service";
 
 export type Tab = "dashboard" | "orders" | "pockets" | "portfolio" | "analytics" | "audit" | "plan";
 
@@ -25,6 +26,7 @@ export type DashboardMetrics = {
   internalTransfers: number;
   diWorkingCapital: number;
   pnl: number;
+  pnlBreakdown: DIPnlBreakdown;
   totalPortfolioPnl: number;
   activeOrders: DIOrder[];
   availableBalances: AssetBalance[];

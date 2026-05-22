@@ -14,7 +14,7 @@ function exposureLabel(asset: string): string {
 
 export function TotalDIValueCard({ metrics, description }: TotalDIValueCardProps) {
   return (
-    <Card className="metric-card total-value-card blue">
+    <Card className="metric-card total-value-card hero-metric blue">
       <MetricInfo label="Total DI Value" description={description} />
       <strong>{money(metrics.diValue)}</strong>
       <div className="asset-breakdown">

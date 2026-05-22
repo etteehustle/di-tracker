@@ -13,9 +13,9 @@ export function MarketPricesCard({ prices, description }: MarketPricesCardProps)
     <Card className="metric-card price-card">
       <MetricInfo label="Market Prices" description={description} />
       <div className="price-list">
-        <strong>SOL {money(prices.SOL)}</strong>
-        <strong>BTC {money(prices.BTC)}</strong>
-        <strong>ETH {money(prices.ETH)}</strong>
+        <span><b>SOL</b><strong>{money(prices.SOL)}</strong></span>
+        <span><b>BTC</b><strong>{money(prices.BTC)}</strong></span>
+        <span><b>ETH</b><strong>{money(prices.ETH)}</strong></span>
       </div>
       <small>OKSOL uses SOL price</small>
     </Card>

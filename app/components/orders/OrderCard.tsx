@@ -32,13 +32,14 @@ export function OrderCard({ order, evaluation, pendingPremium = 0, onSettle, onD
   return (
     <Card className={`order-card ${productTone} ${statusTone}`}>
       <div className="order-title">
-        <div>
+        <div className="order-badge-row">
           <Badge variant="secondary" className={productTone}>{productLabel}</Badge>
           <Badge variant="outline" className={statusTone}>{order.status.replaceAll("_", " ")}</Badge>
         </div>
         <strong>
           {order.exchange} - {order.pair}
         </strong>
+        {evaluation && <small>{evaluation.score} · {evaluation.riskLevel} risk</small>}
       </div>
 
       <div className="order-metrics">
@@ -70,13 +71,14 @@ export function OrderCard({ order, evaluation, pendingPremium = 0, onSettle, onD
         )}
       </div>
 
-      <details>
+      <details className="outcome-detail">
         <summary>Outcome detail</summary>
-        <p>If Hit: receive {amount(order.ifHitAmount)} {order.ifHitAsset}</p>
-        <p>If Not Hit: receive {amount(order.ifNotHitAmount)} {order.ifNotHitAsset}</p>
-        <p>Settlement: {dateTime(order.settlementTime)}</p>
-        <p>Tags: {order.marketContextTags.join(", ") || "None"}</p>
-        {evaluation && <p>Evaluation: {evaluation.score} - {evaluation.riskLevel} Risk</p>}
+        <div className="outcome-grid">
+          <p><b>If Hit</b> receive {amount(order.ifHitAmount)} {order.ifHitAsset}</p>
+          <p><b>If Not Hit</b> receive {amount(order.ifNotHitAmount)} {order.ifNotHitAsset}</p>
+          <p><b>Settlement</b> {dateTime(order.settlementTime)}</p>
+          <p><b>Tags</b> {order.marketContextTags.join(", ") || "None"}</p>
+        </div>
       </details>
 
       {order.status === "ACTIVE" && onSettle && (

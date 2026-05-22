@@ -25,6 +25,17 @@ npm run dev
 
 Open `http://localhost:3000`.
 
+Local development uses the `local` app environment by default. In this mode authentication is disabled and the app reads/writes browser `localStorage`.
+
+To force a specific environment:
+
+```powershell
+$env:NEXT_PUBLIC_APP_ENV="local"; npm run dev
+$env:NEXT_PUBLIC_APP_ENV="production"; npm run dev
+```
+
+Production enables Supabase authentication and hides the Roadmap page. Local keeps Roadmap visible and can still opt into seed data with `NEXT_PUBLIC_ENABLE_MOCK_DATA=true`.
+
 ## Test
 
 ```bash

@@ -1,6 +1,8 @@
 "use client";
 
+import type { Session } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
+import { AuthPanel } from "./components/auth/AuthPanel";
 import { AnalyticsView } from "./components/analytics/AnalyticsView";
 import { AuditView } from "./components/audit/AuditView";
 import { Dashboard } from "./components/dashboard/Dashboard";
@@ -49,6 +51,7 @@ import { evaluateOrder } from "./lib/services/order-evaluation-service";
 import { fetchMarketPrices } from "./lib/services/price-service";
 import {
   getCurrentDIValueUSDT,
+  getDIPnlBreakdownUSDT,
   getDIWorkingCapitalUSDT,
   getDIPnlUSDT,
   getExternalDepositsUSDT,
@@ -64,11 +67,17 @@ import {
 import { recordPortfolioBuy, type PortfolioBuyInput } from "./lib/services/portfolio-adjustment-service";
 import { depositToPocket, mergePockets } from "./lib/services/pocket-service";
 import { settleOrder } from "./lib/services/settlement-service";
+import { loadCloudState, saveCloudState } from "./lib/store/cloud-store";
 import { loadState, resetState, saveState } from "./lib/store/local-store";
+import { isSupabaseConfigured, supabase } from "./lib/supabase/client";
 import type { DashboardMetrics, OrderSettlementResult, Tab } from "./lib/view-models";
 
 export default function Home() {
   const [state, setState] = useState<AppState | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [authReady, setAuthReady] = useState(!isSupabaseConfigured());
+  const [stateReady, setStateReady] = useState(false);
+  const [syncStatus, setSyncStatus] = useState(isSupabaseConfigured() ? "Cloud loading" : "Local mode");
   const [tab, setTab] = useState<Tab>("dashboard");
   const [forecastMode, setForecastMode] = useState<ForecastMode>("SETTLED_ONLY");
   const [targetDailyReturnPercent, setTargetDailyReturnPercent] = useState(0.3);
@@ -80,16 +89,89 @@ export default function Home() {
   const [deleteRequest, setDeleteRequest] = useState<DIOrder | null>(null);
   const [deleteReason, setDeleteReason] = useState("");
 
-  useEffect(() => setState(loadState()), []);
+  useEffect(() => {
+    if (!isSupabaseConfigured() || !supabase) {
+      setState(loadState());
+      setStateReady(true);
+      setAuthReady(true);
+      return;
+    }
+
+    let isActive = true;
+    void supabase.auth.getSession().then(({ data }) => {
+      if (!isActive) return;
+      setSession(data.session);
+      setAuthReady(true);
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      setSession(nextSession);
+      if (!nextSession) {
+        setState(null);
+        setStateReady(false);
+        setSyncStatus("Signed out");
+      }
+    });
+
+    return () => {
+      isActive = false;
+      listener.subscription.unsubscribe();
+    };
+  }, []);
 
   useEffect(() => {
-    if (state) saveState(state);
-  }, [state]);
+    if (!isSupabaseConfigured() || !supabase || !authReady || !session) return;
+
+    let isActive = true;
+    setStateReady(false);
+    setSyncStatus("Cloud loading");
+    void loadCloudState(session.user)
+      .then((nextState) => {
+        if (!isActive) return;
+        setState(nextState);
+        setStateReady(true);
+        setSyncStatus("Cloud synced");
+      })
+      .catch((error) => {
+        if (!isActive) return;
+        toast.error(error instanceof Error ? error.message : "Cloud load failed");
+        setSyncStatus("Cloud error");
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [authReady, session?.user.id]);
+
+  useEffect(() => {
+    if (!state || !stateReady) return;
+
+    if (!isSupabaseConfigured() || !supabase || !session) {
+      saveState(state);
+      return;
+    }
+
+    setSyncStatus("Saving");
+    const id = window.setTimeout(() => {
+      void saveCloudState(session.user.id, state)
+        .then(() => setSyncStatus("Cloud synced"))
+        .catch((error) => {
+          toast.error(error instanceof Error ? error.message : "Cloud save failed");
+          setSyncStatus("Cloud error");
+        });
+    }, 450);
+
+    return () => window.clearTimeout(id);
+  }, [state, stateReady, session?.user.id]);
 
   useEffect(() => {
     const id = window.setInterval(() => void refreshPrices(), 30_000);
     return () => window.clearInterval(id);
   }, []);
+
+  useEffect(() => {
+    if (!environment.features.roadmap && tab === "plan") setTab("dashboard");
+  }, [tab]);
 
   const metrics = useMemo<DashboardMetrics | null>(() => {
     if (!state) return null;
@@ -109,6 +191,7 @@ export default function Home() {
       internalTransfers: getInternalTransfersUSDT(state),
       diWorkingCapital: getDIWorkingCapitalUSDT(state),
       pnl: getDIPnlUSDT(state),
+      pnlBreakdown: getDIPnlBreakdownUSDT(state),
       totalPortfolioPnl: getTotalPortfolioPnlUSDT(state),
       activeOrders,
       availableBalances: getDIAvailableBalances(state),
@@ -139,7 +222,9 @@ export default function Home() {
     }
   }
 
-  if (!state || !metrics) return <main className="loading">Loading DI Tracker...</main>;
+  if (!authReady) return <main className="loading">Loading DI Tracker...</main>;
+  if (isSupabaseConfigured() && !session) return <AuthPanel />;
+  if (!stateReady || !state || !metrics) return <main className="loading">Loading DI Tracker...</main>;
   const currentState = state;
   const currentMetrics = metrics;
 
@@ -238,6 +323,10 @@ export default function Home() {
     }
   }
 
+  function signOut() {
+    void supabase?.auth.signOut();
+  }
+
   function renderActiveTab() {
     if (tab === "dashboard") {
       return (
@@ -283,7 +372,20 @@ export default function Home() {
       return <AuditView state={currentState} />;
     }
 
-    return <Roadmap onReset={() => setState(resetState())} />;
+    if (environment.features.roadmap) {
+      return <Roadmap onReset={() => setState(resetState())} />;
+    }
+
+    return (
+      <Dashboard
+        metrics={currentMetrics}
+        forecastMode={forecastMode}
+        onForecastModeChange={setForecastMode}
+        targetDailyReturnPercent={targetDailyReturnPercent}
+        onTargetDailyReturnPercentChange={setTargetDailyReturnPercent}
+        onManageOrders={() => setTab("orders")}
+      />
+    );
   }
 
   return (
@@ -291,8 +393,11 @@ export default function Home() {
       <AppShell
         activeTab={tab}
         priceStatus={priceStatus}
+        syncStatus={syncStatus}
+        userEmail={session?.user.email}
         onTabChange={setTab}
         onRefreshPrices={() => void refreshPrices()}
+        onSignOut={session && supabase ? signOut : undefined}
       >
         {renderActiveTab()}
       </AppShell>

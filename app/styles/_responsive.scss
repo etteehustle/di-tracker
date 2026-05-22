@@ -2,12 +2,16 @@
   .dashboard-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+
+  .dashboard-hero-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 980px) {
   .app-shell {
     grid-template-columns: 1fr;
-    padding-bottom: 74px;
+    padding-bottom: 86px;
   }
 
   .sidebar {
@@ -18,10 +22,11 @@
     bottom: 0;
     top: auto;
     height: auto;
-    padding: 8px;
+    padding: 10px 12px;
     display: block;
     border-right: 0;
     border-top: 1px solid var(--border);
+    background: rgba(8, 9, 11, 0.9);
   }
 
   .brand {
@@ -30,24 +35,35 @@
 
   .sidebar nav {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+    place-items: center;
   }
 
   .sidebar .nav-button {
-    min-height: 54px;
+    width: 100%;
+    height: 56px;
+    min-height: 56px;
+    max-width: 56px;
     justify-content: center;
-    padding: 6px;
-    font-size: 0;
+    gap: 0;
+    padding: 0;
   }
 
   .sidebar .nav-button svg {
+    display: block;
+    flex: 0 0 auto;
     width: 20px;
     height: 20px;
   }
 
+  .sidebar .nav-label {
+    display: none;
+  }
+
   .content {
     padding: 16px;
+    max-width: none;
   }
 
   .topbar {
@@ -61,6 +77,8 @@
   }
 
   .dashboard-grid,
+  .dashboard-hero-grid,
+  .dashboard-workbench,
   .two-column,
   .order-list.compact,
   .card-grid,
@@ -71,12 +89,20 @@
 }
 
 @media (max-width: 620px) {
+  :root {
+    --space-page: 12px;
+  }
+
   .content {
     padding: 12px;
   }
 
   .topbar {
     padding: 12px;
+  }
+
+  .topbar h1 {
+    font-size: 26px;
   }
 
   .dashboard-grid {
@@ -94,7 +120,7 @@
   }
 
   .sidebar nav {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .datetime-popover {

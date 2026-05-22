@@ -45,7 +45,7 @@ export function PortfolioView({ state, metrics, onRecordBuy }: PortfolioViewProp
 
   return (
     <>
-      <section className="panel">
+      <section className="panel portfolio-overview">
         <h2>Portfolio Overview</h2>
         <div className="stat-row">
           <MetricCard label="Portfolio Total Value" value={money(metrics.portfolioTotal)} />
@@ -101,7 +101,7 @@ export function PortfolioView({ state, metrics, onRecordBuy }: PortfolioViewProp
         </div>
       </section>
 
-      <Card className="panel">
+      <Card className="panel portfolio-action-panel">
         <h2>Record Portfolio Buy</h2>
         <form className="form-grid portfolio-buy-form" onSubmit={submitBuy}>
           <label>

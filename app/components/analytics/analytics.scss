@@ -1,0 +1,58 @@
+.analytics-panel {
+  width: 100%;
+}
+
+.analytics-ledger-preview {
+  margin-top: 16px;
+  display: grid;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--muted-bg);
+  padding: 16px;
+}
+
+.analytics-ledger-preview > span {
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.analytics-bars {
+  height: 132px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+  border-bottom: 1px solid var(--border);
+  padding: 0 4px;
+}
+
+.analytics-bars i {
+  display: block;
+  min-height: 22px;
+  border: 1px solid rgba(45, 212, 191, 0.24);
+  border-radius: var(--radius-tight) var(--radius-tight) 0 0;
+  background: linear-gradient(180deg, rgba(45, 212, 191, 0.82), rgba(18, 58, 56, 0.45));
+}
+
+.analytics-bars .bar-1 {
+  height: 42%;
+}
+
+.analytics-bars .bar-2 {
+  height: 68%;
+}
+
+.analytics-bars .bar-3 {
+  height: 54%;
+}
+
+.analytics-bars .bar-4 {
+  height: 78%;
+}
+
+.analytics-bars .bar-5 {
+  height: 61%;
+}

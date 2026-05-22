@@ -43,7 +43,7 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
   }
 
   return (
-    <Card className="panel">
+    <Card className="panel create-order-panel">
       <SectionHeading title="Create Order" meta={`${evaluation.score} - ${evaluation.riskLevel} risk`} />
       <form className="form-grid" onSubmit={submit}>
         <label>
@@ -145,6 +145,7 @@ export function CreateOrderForm({ state, value, evaluation, onChange, onSubmit }
         </label>
 
         <div className="evaluation-box">
+          <span className="evaluation-kicker">Evaluation before save</span>
           <strong>{evaluation.score} - {evaluation.riskLevel} Risk - {evaluation.efficiencyLabel}</strong>
           <span>{evaluation.reasons.join(" ")}</span>
         </div>
