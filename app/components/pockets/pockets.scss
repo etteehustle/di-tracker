@@ -45,3 +45,7 @@
   color: var(--muted);
   line-height: 1.45;
 }
+
+.movement-history-panel {
+  grid-column: 1 / -1;
+}

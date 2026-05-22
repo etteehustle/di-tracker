@@ -64,7 +64,7 @@ import {
   getTotalPortfolioPnlUSDT,
   makeForecast
 } from "./lib/services/portfolio-service";
-import { recordPortfolioBuy, type PortfolioBuyInput } from "./lib/services/portfolio-adjustment-service";
+import { recordCapitalAdjustment, recordPortfolioBuy, type CapitalAdjustmentInput, type PortfolioBuyInput } from "./lib/services/portfolio-adjustment-service";
 import { depositToPocket, mergePockets } from "./lib/services/pocket-service";
 import { settleOrder } from "./lib/services/settlement-service";
 import { loadCloudState, saveCloudState } from "./lib/store/cloud-store";
@@ -307,6 +307,14 @@ export default function Home() {
     }
   }
 
+  function createAdjustment(input: CapitalAdjustmentInput) {
+    try {
+      setState((current) => current ? recordCapitalAdjustment(current, input) : current);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Adjustment failed");
+    }
+  }
+
   function mergePocket(sourcePocketId: string, targetPocketId: string, note: string) {
     try {
       setState((current) => current ? mergePockets(current, sourcePocketId, targetPocketId, note) : current);
@@ -357,7 +365,7 @@ export default function Home() {
     }
 
     if (tab === "pockets") {
-      return <PocketsView state={currentState} onDeposit={createDeposit} onMerge={mergePocket} />;
+      return <PocketsView state={currentState} onDeposit={createDeposit} onAdjustment={createAdjustment} onMerge={mergePocket} />;
     }
 
     if (tab === "portfolio") {

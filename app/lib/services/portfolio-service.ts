@@ -83,6 +83,7 @@ export function getInternalTransfersUSDT(state: AppState): number {
 export function getDIWorkingCapitalUSDT(state: AppState): number {
   return state.capitalMovements.reduce((sum, movement) => {
     if (movement.type === "DEPOSIT" && movement.toPocketId) return sum + movementValueUSDT(movement);
+    if (movement.type === "ADJUSTMENT" && movement.toPocketId) return sum + movementValueUSDT(movement);
     if (movement.type === "INTERNAL_TRANSFER" && movement.toPocketId) return sum + movementValueUSDT(movement);
     if (movement.type === "WITHDRAW_DI_TO_PORTFOLIO") return sum - movementValueUSDT(movement);
     return sum;

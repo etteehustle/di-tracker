@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { AppState, DIOrder } from "../lib/domain/types";
 import { normalizeAsset } from "../lib/domain/assets";
 import { getExposureHoldingEntries, getHoldingEntries, weightedAverageEntry } from "../lib/services/cost-basis-service";
-import { getLedgerBalances, getLedgerExposureBalances } from "../lib/services/ledger-service";
+import { getDIAvailableBalances, getLedgerBalances, getLedgerExposureBalances } from "../lib/services/ledger-service";
 import {
   activeOrderConservativeValueUSDT,
   getCurrentDIValueUSDT,
@@ -19,7 +19,7 @@ import {
   getTotalPortfolioPnlUSDT,
   makeForecast
 } from "../lib/services/portfolio-service";
-import { recordPortfolioBuy } from "../lib/services/portfolio-adjustment-service";
+import { recordCapitalAdjustment, recordPortfolioBuy } from "../lib/services/portfolio-adjustment-service";
 import { mergePockets } from "../lib/services/pocket-service";
 import { softDeleteOrder } from "../lib/services/order-service";
 import { settleOrder } from "../lib/services/settlement-service";
@@ -401,6 +401,36 @@ describe("DI accounting services", () => {
       getPortfolioTotalValueUSDT(withInternalTransfer) - 11361,
       6
     );
+  });
+
+  it("records capital adjustments as balance changes without external capital or DI PnL impact", () => {
+    const state = cloneState();
+    const beforeExternalNet = getExternalNetDepositedCapitalUSDT(state);
+    const beforeExternalDeposits = getExternalDepositsUSDT(state);
+    const beforeDIWorkingCapital = getDIWorkingCapitalUSDT(state);
+    const beforeDIPnl = getDIPnlUSDT(state);
+    const beforeBreakdown = getDIPnlBreakdownUSDT(state);
+    const beforeAvailableOKSOL = getDIAvailableBalances(state).find((balance) => balance.asset === "OKSOL")?.amount ?? 0;
+
+    const next = recordCapitalAdjustment(state, {
+      pocketId: "pocket_core_sol",
+      asset: "OKSOL",
+      amount: 0.01,
+      valueUSDTAtTime: 0.844,
+      note: "Existing OKX OKSOL dust before transfer"
+    });
+
+    const adjustment = next.capitalMovements[0];
+    const availableOKSOL = getDIAvailableBalances(next).find((balance) => balance.asset === "OKSOL")?.amount ?? 0;
+
+    expect(adjustment.type).toBe("ADJUSTMENT");
+    expect(adjustment.note).toBe("Existing OKX OKSOL dust before transfer");
+    expect(availableOKSOL).toBeCloseTo(beforeAvailableOKSOL + 0.01, 6);
+    expect(getExternalDepositsUSDT(next)).toBe(beforeExternalDeposits);
+    expect(getExternalNetDepositedCapitalUSDT(next)).toBe(beforeExternalNet);
+    expect(getDIWorkingCapitalUSDT(next)).toBeCloseTo(beforeDIWorkingCapital + 0.844, 6);
+    expect(getDIPnlUSDT(next)).toBeCloseTo(beforeDIPnl, 6);
+    expect(getDIPnlBreakdownUSDT(next).totalDIPnlUSDT).toBeCloseTo(beforeBreakdown.totalDIPnlUSDT, 6);
   });
 
   it("groups current holding entries by exposure for the main DI view", () => {

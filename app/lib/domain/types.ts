@@ -9,6 +9,7 @@ export type SettlementResult = "HIT" | "NOT_HIT";
 export type PocketStatus = "ACTIVE" | "MERGED" | "ARCHIVED";
 export type MovementType =
   | "DEPOSIT"
+  | "ADJUSTMENT"
   | "WITHDRAW_DI_TO_PORTFOLIO"
   | "WITHDRAW_PORTFOLIO_EXTERNAL"
   | "INTERNAL_TRANSFER"
@@ -198,6 +199,7 @@ export type AuditLog = {
     | "DELETE_ORDER"
     | "SETTLE_ORDER"
     | "CREATE_DEPOSIT"
+    | "CREATE_ADJUSTMENT"
     | "CREATE_WITHDRAWAL"
     | "MANUAL_ADJUSTMENT"
     | "MERGE_POCKET"
