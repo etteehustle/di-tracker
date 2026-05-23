@@ -9,7 +9,7 @@ import {
   Split,
   WalletCards
 } from "lucide-react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { Tab } from "../../lib/view-models";
 import { environment } from "../../environment";
 import { Button } from "@/components/ui/button";
@@ -47,6 +47,7 @@ export function AppShell({
 }: AppShellProps) {
   const visibleTabs = tabs.filter((item) => item.id !== "plan" || environment.features.roadmap);
   const activeLabel = visibleTabs.find((item) => item.id === activeTab)?.label ?? "Dashboard";
+  const navStyle = { "--nav-item-count": visibleTabs.length } as CSSProperties;
 
   return (
     <main className="app-shell">
@@ -58,7 +59,7 @@ export function AppShell({
             <span>Dual Investment ledger</span>
           </div>
         </div>
-        <nav aria-label="Primary navigation">
+        <nav aria-label="Primary navigation" style={navStyle}>
           {visibleTabs.map((item) => (
             <Button
               key={item.id}

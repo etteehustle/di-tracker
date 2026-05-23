@@ -47,6 +47,7 @@
 }
 
 .sidebar nav {
+  --nav-item-count: 7;
   display: grid;
   gap: 6px;
 }

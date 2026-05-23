@@ -35,7 +35,7 @@
 
   .sidebar nav {
     display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--nav-item-count), minmax(0, 1fr));
     gap: 6px;
     place-items: center;
   }
@@ -84,7 +84,7 @@
   .card-grid,
   .stat-row,
   .roadmap .phase-list {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -120,7 +120,7 @@
   }
 
   .sidebar nav {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
+    grid-template-columns: repeat(var(--nav-item-count), minmax(0, 1fr));
   }
 
   .datetime-popover {

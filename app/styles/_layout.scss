@@ -11,6 +11,10 @@
   align-items: start;
 }
 
+.two-column > * {
+  min-width: 0;
+}
+
 .panel {
   padding: 18px;
   background: var(--card);
