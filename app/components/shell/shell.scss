@@ -11,7 +11,7 @@
   background: rgba(8, 9, 11, 0.94);
   border-right: 1px solid var(--border);
   color: var(--ink);
-  padding: 22px 14px;
+  padding: calc(22px + var(--safe-top)) calc(14px + var(--safe-right)) 22px calc(14px + var(--safe-left));
   display: flex;
   flex-direction: column;
   gap: 28px;
@@ -86,7 +86,11 @@
 
 .content {
   min-width: 0;
-  padding: var(--space-page);
+  padding:
+    calc(var(--space-page) + var(--safe-top))
+    calc(var(--space-page) + var(--safe-right))
+    var(--space-page)
+    calc(var(--space-page) + var(--safe-left));
   width: 100%;
 }
 
