@@ -36,6 +36,17 @@ $env:NEXT_PUBLIC_APP_ENV="production"; npm run dev
 
 Production enables Supabase authentication and hides the Roadmap page. Local keeps Roadmap visible and can still opt into seed data with `NEXT_PUBLIC_ENABLE_MOCK_DATA=true`.
 
+## Install on iPhone as PWA
+
+Deploy the app to an HTTPS URL, then on iPhone:
+
+1. Open the deployed URL in Safari.
+2. Tap Share.
+3. Choose Add to Home Screen.
+4. Open DI Tracker from the home screen icon.
+
+The app includes a web manifest, iOS home-screen metadata, touch icons, and a production service worker for basic app-shell caching. Local financial state remains stored in the browser unless Supabase is configured.
+
 ## Test
 
 ```bash
